@@ -1,0 +1,42 @@
+/* Scoreboard.css */
+
+.scoreboard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background-color: #282c34; /* Dark background for contrast */
+    color: #ffffff; /* White text for readability */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow for 3D effect */
+    width: 80%; /* Responsive width */
+    margin: 30px auto; /* Centering the scoreboard */
+  }
+  
+  .scoreboard h2 {
+    font-size: 24px;
+    color: #ffcc00; /* Gold color for headings */
+    margin-bottom: 15px;
+  }
+  
+  .scoreboard p {
+    font-size: 18px;
+    margin-bottom: 20px;
+  }
+  
+  .scoreboard button {
+    padding: 10px 20px;
+    font-size: 16px;
+    color: #282c34; /* Dark text for button */
+    background-color: #ffcc00; /* Gold background for buttons */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .scoreboard button:hover {
+    background-color: #ffd700; /* Slightly lighter gold on hover */
+  }
+  

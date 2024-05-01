@@ -1,0 +1,27 @@
+.start-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh; /* Use full height to center vertically on the page */
+    background-color: #282c34; /* Example background color */
+    color: white;
+    text-align: center;
+  }
+  
+  .start-screen h1 {
+    margin-bottom: 20px;
+  }
+  
+  .start-screen input {
+    margin-bottom: 10px;
+    padding: 10px;
+    font-size: 16px;
+  }
+  
+  .start-screen button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  

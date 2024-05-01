@@ -1,25 +1,29 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react';
+import StartScreen from './components/StartScreen';
+import GameScreen from './components/GameScreen';
+import './CSS/App.css';
 
-function App() {
+const App = () => {
+  const [gameStarted, setGameStarted] = useState(false);
+  const [playerName, setPlayerName] = useState('');
+
+  // Function to start the game
+  const startGame = (playerName) => {
+    console.log('Game started with player:', playerName);
+    setPlayerName(playerName); // add save the player's name
+    setGameStarted(true); // Update the state to indicate the game has started
+  };
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      {gameStarted ? (
+        <GameScreen playerName={playerName} />
+      ) : (
+        <StartScreen onStartGame={startGame} />
+      )}
+      {/* You can also conditionally render other components based on the state */}
     </div>
   );
-}
+};
 
 export default App;
