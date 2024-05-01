@@ -1,0 +1,71 @@
+.game-screen {
+    position: relative;
+    width: 100%; /* Use the full width of the container */
+    height: 100vh; /* Use full viewport height */
+    background-color: #ccc; /* Replace with your game's track image or color */
+  }
+  
+  .dashboard {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    padding: 10px;
+    background-color: rgba(0,0,0,0.5); /* Semi-transparent dashboard background */
+  }
+  
+  .score-board,
+  .fuel-gauge {
+    color: #fff;
+  }
+  
+  .track {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .player-car {
+    position: absolute;
+    bottom: 50px; /* Distance from the bottom of the track */
+    left: 50%; /* Start in the middle of the track */
+    width: 50px; /* Car width */
+    height: 100px; /* Car height */
+    background-color: blue; /* Replace with your car's image */
+    background-size: cover;
+    transform: translateX(-50%); /* Center the car */
+  }
+
+  .pause-menu {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    padding: 20px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: auto;
+  }
+  
+  .pause-menu button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #ffcc00;
+    color: #282c34;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+  }
+  
+  .pause-menu button:hover {
+    background-color: #ffd700;
+  }
+  
+  
+  
