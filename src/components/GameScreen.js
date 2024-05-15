@@ -1,70 +1,89 @@
-import React, { useState } from 'react';
-import Scoreboard from './Scoreboard';
-import StartScreen from './StartScreen'; // Ensure you import StartScreen for navigation
-import '../CSS/GameScreen.css';
+import React, { useState, useEffect } from "react";
+import Scoreboard from "./Scoreboard";
+import Car from "./Car";
+import "../CSS/GameScreen.css";
 
 const GameScreen = ({ playerName, onGameEnd }) => {
-  const [gamePaused, setGamePaused] = useState(false);
-  const [score, setScore] = useState(0);
-  const [showingScoreboard, setShowingScoreboard] = useState(false);
+    const [gamePaused, setGamePaused] = useState(false);
+    const [showingScoreboard, setShowingScoreboard] = useState(false);
+    const [position, setPosition] = useState({ x: 2, y: 90 });  // Initial car position
+    const [fuel, setFuel] = useState(100);
+    const [score, setScore] = useState(0);
+    const lanes = [10, 30, 50, 70, 90];
 
-  const togglePause = () => {
-    setGamePaused(!gamePaused);
-  };
+    const togglePause = () => setGamePaused(!gamePaused);
+    const endGame = () => {
+        onGameEnd();
+        setGamePaused(false);
+        setShowingScoreboard(false);
+    };
 
-  const endGame = () => {
-    onGameEnd(); // Assuming onGameEnd resets the game and navigates back to StartScreen
-    setGamePaused(false);
-    setShowingScoreboard(false);
-  };
+    const showScoreboard = () => {
+        setShowingScoreboard(true);
+        setGamePaused(false);
+    };
 
-  const showScoreboard = () => {
-    setShowingScoreboard(true);
-    setGamePaused(false); // Optionally close the pause menu
-  };
+    const restartGame = () => {
+        setScore(0);
+        setFuel(100);
+        setPosition({ x: 2, y: 10 });
+        setGamePaused(false);
+        setShowingScoreboard(false);
+    };
 
-  const restartGame = () => {
-    console.log("Game restarted");
-    setScore(0);
-    setGamePaused(false);
-    setShowingScoreboard(false); // Ensure scoreboard is not displayed when restarting
-  };
+    useEffect(() => {
+        const handleKeyDown = (event) => {
+            if (!gamePaused) {
+                switch (event.key) {
+                    case "ArrowLeft":
+                        setPosition((prev) => ({ ...prev, x: Math.max(prev.x - 1, 0) }));
+                        break;
+                    case "ArrowRight":
+                        setPosition((prev) => ({ ...prev, x: Math.min(prev.x + 1, lanes.length - 1) }));
+                        break;
+                    default:
+                        break;
+                }
+            }
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [gamePaused, lanes]);
 
-  const openSettings = () => {
-    console.log("Settings opened");
-  };
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (!gamePaused) {
+                setScore(score + 1);
+                setFuel(fuel - 1);
+                if (fuel <= 0) {
+                    clearInterval(interval);
+                    endGame();
+                }
+            }
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [score, fuel, gamePaused]);
 
-  const showHelp = () => {
-    console.log("Help/How to Play displayed");
-  };
-
-  return (
-    <div className="game-screen">
-      {gamePaused && !showingScoreboard ? (
-        <div className="pause-menu">
-          <button onClick={() => setGamePaused(false)}>Resume Game</button>
-          <button onClick={endGame}>End Race</button>
-          <button onClick={showScoreboard}>Scoreboard</button>
-          <button onClick={openSettings}>Settings</button>
-          <button onClick={showHelp}>Help/How to Play</button>
-          <button onClick={restartGame}>Restart</button>
+    return (
+        <div className="game-screen">
+            <div className="dashboard">
+                <div className="score-board">Score: {score}</div>
+                <div className="fuel-gauge">Fuel: {fuel}%</div>
+            </div>
+            <button className="pause-button" onClick={togglePause}>Pause</button>
+            {gamePaused ? (
+                <div className="pause-menu">
+                    <button onClick={() => setGamePaused(false)}>Resume Game</button>
+                    <button onClick={endGame}>End Race</button>
+                    <button onClick={showScoreboard}>Scoreboard</button>
+                    <button onClick={restartGame}>Restart</button>
+                </div>
+            ) : null}
+            <div className="track">
+                <Car position={{ x: lanes[position.x], y: position.y }} />
+            </div>
         </div>
-      ) : showingScoreboard ? (
-        <Scoreboard score={score} onBack={() => setShowingScoreboard(false)} />
-      ) : (
-        <div>
-          <div className="dashboard">
-            <div className="score-board">Score: {score}</div>
-            <div className="fuel-gauge">Fuel: 100%</div>
-          </div>
-          <div className="track">
-            <div className="player-car"></div>
-            <button onClick={togglePause}>Pause</button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+    );
 };
 
 export default GameScreen;

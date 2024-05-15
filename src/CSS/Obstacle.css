@@ -1,0 +1,9 @@
+.obstacle {
+    position: absolute;
+    width: 10%;
+    height: 15vh; /* Adjust based on your game design */
+    /* background-image: url('../assets/obstacle.png'); */
+    background-size: cover;
+    background-repeat: no-repeat;
+  }
+  
