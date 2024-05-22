@@ -1,0 +1,48 @@
+@font-face {
+    font-family: 'Olive Days';
+    src: url('../fonts/Olive Days.ttf') format('truetype');
+  }
+  
+  .dashboard {
+    font-family: 'Olive Days', sans-serif;
+    width: 100%;
+    padding: 10px;
+    color: #fff;
+    background-color: #333;
+    display: flex;
+    justify-content: space-between;
+    box-sizing: border-box;
+    max-width: 400px;
+    height: 10%;  /* Ensures dashboard takes up a set portion of the screen */
+  }
+  
+  .score-board, .fuel-gauge {
+    flex: 1;
+    text-align: center;
+    color: #fff;
+  }
+  
+  .fuel-gauge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .fuel-label {
+    font-family: 'Olive Days', sans-serif;
+    margin-bottom: 5px;
+  }
+  
+  .fuel-dots {
+    display: flex;
+  }
+  
+  .fuel-dot {
+    width: 20px;
+    height: 40px;
+    background-color: blue;
+    border-radius: 10px;
+    margin-right: 5px;
+    border: 2px solid white;
+  }
+  

@@ -1,13 +1,14 @@
 .player-car {
-    position: absolute;
-    width: 50px;
-    height: 50px;
-    background-color: red;
-    /* background-image: url('../assets/car_03.png'); /* Image of the car */
-    /* background-size: contain;
-    background-repeat: no-repeat; */
-    transition: left 0.2s ease-in-out, bottom 0.2s ease-in-out; /* Smooth transitions for movement */
-    bottom: 5%;  /* Adjust this value to position the car nearer to the bottom of the game area */
-    left: 50%;  /* Centers the car at the start, adjust based on game logic */
-    transform: translateX(-50%); /* Centers the car based on its width */
-  }
+  position: absolute;
+  transition: left 0.2s ease-in-out, bottom 0.2s ease-in-out; /* Smooth transitions for movement */
+  bottom: 5%; /* Default bottom position */
+  left: 50%; /* Centers the car at the start */
+  transform: translateX(-50%); /* Centers the car based on its width */
+}
+
+/* Example obstacle styling, this is optional */
+.obstacle {
+  background-color: rgb(255, 49, 193);
+  border-radius: 5px;
+  position: absolute;
+}

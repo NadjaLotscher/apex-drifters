@@ -1,34 +1,26 @@
+@font-face {
+  font-family: 'Olive Days';
+  src: url('../fonts/Olive Days.ttf') format('truetype');
+}
+
 .game-screen {
   display: flex;
   flex-direction: column;
   align-items: center;
-  height: 90vh;
-  width: 50vw;
+  height: 100vh;
+  width: 100vw;
   margin: auto;
   background-color: #ff95f1;
   position: relative;
-}
-
-.dashboard {
-  width: 100%;
-  padding: 10px;
-  color: #fff;
-  background-color: #333;
-  display: flex;
-  justify-content: space-between;
-  height: 10%;  /* Ensures dashboard takes up a set portion of the screen */
-}
-
-.score-board, .fuel-gauge {
-  flex: 1;
-  text-align: center;
-  color: #fff;
+  overflow: hidden;
 }
 
 .button-container {
   width: 100%; /* Full width to align center */
   text-align: center; /* Center pause button */
   padding: 10px 0; /* Some padding around the button */
+  max-width: 400px; /* Match the width of the track */
+  box-sizing: border-box; /* Include padding in the width calculation */
 }
 
 .pause-button {
@@ -42,10 +34,14 @@
 }
 
 .track {
-  flex-grow: 1;
-  width: 100%;
+  width: 400px;
+  height: 1046px;
   position: relative;
   background-color: #fffb00;
+  background-image: url('../assets/15_long-road-in-game-mockup_half.png');
+  background-size: cover;
+  background-position: center;
+  margin: auto; /* Center the track */
 }
 
 .pause-menu {

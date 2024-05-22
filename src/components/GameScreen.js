@@ -1,18 +1,23 @@
 import React, { useState, useEffect } from "react";
 import Scoreboard from "./Scoreboard";
 import Car from "./Car";
+import Dashboard from "./Dashboard";
+import Obstacle from "./Obstacle";
 import "../CSS/GameScreen.css";
 
 const GameScreen = ({ playerName, onGameEnd }) => {
     const [gamePaused, setGamePaused] = useState(false);
     const [showingScoreboard, setShowingScoreboard] = useState(false);
-    const [position, setPosition] = useState({ x: 2, y: 90 });  // Initial car position
+    const [position, setPosition] = useState({ x: 2, y: 10 });  // Initial car position
     const [fuel, setFuel] = useState(100);
     const [score, setScore] = useState(0);
-    const lanes = [10, 30, 50, 70, 90];
+    const [obstacles, setObstacles] = useState([]);
+    const [carDimensions, setCarDimensions] = useState({ width: 45, height: 70 });
+    const lanes = [12.5, 37.5, 62.5, 87.5];
 
     const togglePause = () => setGamePaused(!gamePaused);
     const endGame = () => {
+        console.log("Game ended");
         onGameEnd();
         setGamePaused(false);
         setShowingScoreboard(false);
@@ -27,6 +32,7 @@ const GameScreen = ({ playerName, onGameEnd }) => {
         setScore(0);
         setFuel(100);
         setPosition({ x: 2, y: 10 });
+        setObstacles([]);
         setGamePaused(false);
         setShowingScoreboard(false);
     };
@@ -54,22 +60,58 @@ const GameScreen = ({ playerName, onGameEnd }) => {
         const interval = setInterval(() => {
             if (!gamePaused) {
                 setScore(score + 1);
-                setFuel(fuel - 1);
+                setFuel((prevFuel) => Math.max(0, prevFuel - 0.1));
+                
                 if (fuel <= 0) {
+                    console.log('Fuel ran out');
                     clearInterval(interval);
                     endGame();
                 }
+
+                if (Math.random() < 0.05) {
+                    const lane = lanes[Math.floor(Math.random() * lanes.length)];
+                    const newObstacle = new Obstacle(lane, 0, 20, 20, 2);
+                    setObstacles((prev) => [...prev, newObstacle]);
+                }
+
+                setObstacles((prev) =>
+                    prev.map((obstacle) => {
+                        obstacle.update();
+                        return obstacle;
+                    }).filter((obstacle) => obstacle.y < 600)
+                );
             }
-        }, 1000);
+        }, 1000 / 60);
         return () => clearInterval(interval);
-    }, [score, fuel, gamePaused]);
+    }, [score, fuel, gamePaused, lanes]);
+
+    useEffect(() => {
+        let collisionDetected = false;
+        obstacles.forEach((obstacle) => {
+            const carBottom = 600 - position.y - carDimensions.height;
+            const carRect = {
+                x: lanes[position.x] - carDimensions.width / 2,
+                y: carBottom,
+                width: carDimensions.width,
+                height: carDimensions.height,
+            };
+
+            console.log(`Car Rect: x=${carRect.x}, y=${carRect.y}, width=${carRect.width}, height=${carRect.height}`);
+            console.log(`Obstacle: x=${obstacle.x}, y=${obstacle.y}, width=${obstacle.width}, height=${obstacle.height}`);
+            if (obstacle.collidesWith(carRect)) {
+                console.log('Collision Detected!', obstacle, carRect);
+                collisionDetected = true;
+            }
+        });
+
+        if (collisionDetected) {
+            endGame();
+        }
+    }, [obstacles, position, lanes, carDimensions]);
 
     return (
         <div className="game-screen">
-            <div className="dashboard">
-                <div className="score-board">Score: {score}</div>
-                <div className="fuel-gauge">Fuel: {fuel}%</div>
-            </div>
+            <Dashboard score={score} fuel={fuel} />
             <button className="pause-button" onClick={togglePause}>Pause</button>
             {gamePaused ? (
                 <div className="pause-menu">
@@ -80,7 +122,21 @@ const GameScreen = ({ playerName, onGameEnd }) => {
                 </div>
             ) : null}
             <div className="track">
-                <Car position={{ x: lanes[position.x], y: position.y }} />
+                <Car position={{ x: lanes[position.x], y: position.y }} setCarDimensions={setCarDimensions} />
+                {obstacles.map((obstacle, index) => (
+                    <div
+                        key={index}
+                        className="obstacle"
+                        style={{
+                            position: "absolute",
+                            top: obstacle.y,
+                            left: `${obstacle.x}%`,
+                            width: `${obstacle.width}px`,
+                            height: `${obstacle.height}px`,
+                            backgroundColor: "black",
+                        }}
+                    ></div>
+                ))}
             </div>
         </div>
     );
