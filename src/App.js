@@ -14,6 +14,14 @@ const App = () => {
     setGameStarted(true); // Update the state to indicate the game has started
   };
 
+  const endGame = () => {
+    setGameStarted(false); // Réinitialiser pour montrer `StartScreen`
+  };
+  
+  // Pass this function as a prop to GameScreen
+  <GameScreen playerName={playerName} onGameEnd={endGame} />
+  
+
   return (
     <div className="App">
       {gameStarted ? (
