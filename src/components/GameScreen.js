@@ -4,6 +4,8 @@ import Car from "./Car";
 import Dashboard from "./Dashboard";
 import Obstacle from "./Obstacle";
 import "../CSS/GameScreen.css";
+import HowToPlayModal from './HowToPlayModal'; // Importation du composant modal How to Play
+import backgroundMusic from '../assets/audio.mp3'; // Importation du fichier audio
 
 const GameScreen = ({ playerName, onGameEnd }) => {
     const [gamePaused, setGamePaused] = useState(false);
@@ -13,7 +15,18 @@ const GameScreen = ({ playerName, onGameEnd }) => {
     const [score, setScore] = useState(0);
     const [obstacles, setObstacles] = useState([]);
     const [carDimensions, setCarDimensions] = useState({ width: 45, height: 70 });
+    const [isMusicOn, setIsMusicOn] = useState(true);
+    const [showHowToPlay, setShowHowToPlay] = useState(false); // State for displaying How to Play modal
     const lanes = [12.5, 37.5, 62.5, 87.5];
+
+  useEffect(() => {
+    const music = document.getElementById('backgroundMusic');
+    if (isMusicOn) {
+      music.play().catch(error => console.log("Error playing music:", error));
+    } else {
+      music.pause();
+    }
+  }, [isMusicOn]);
 
     const togglePause = () => setGamePaused(!gamePaused);
     const endGame = () => {
@@ -36,6 +49,18 @@ const GameScreen = ({ playerName, onGameEnd }) => {
         setGamePaused(false);
         setShowingScoreboard(false);
     };
+  
+  const toggleMusic = () => {
+    setIsMusicOn(!isMusicOn);
+  };
+
+  const handleHowToPlay = () => {
+    setShowHowToPlay(true); // Affiche la modal How to Play
+  };
+
+  const closeHowToPlay = () => {
+    setShowHowToPlay(false); // Ferme la modal How to Play
+  };
 
     useEffect(() => {
         const handleKeyDown = (event) => {
@@ -111,13 +136,24 @@ const GameScreen = ({ playerName, onGameEnd }) => {
 
     return (
         <div className="game-screen">
+            <audio id="backgroundMusic" loop>
+                <source src={backgroundMusic} type="audio/mpeg" />
+            </audio>
+            {showHowToPlay && (
+                <HowToPlayModal
+                    isOpen={showHowToPlay}
+                    onClose={() => setShowHowToPlay(false)}
+                    text="Instructions..."
+                />
+            )}
             <Dashboard score={score} fuel={fuel} />
-            <button className="pause-button" onClick={togglePause}>Pause</button>
             {gamePaused ? (
                 <div className="pause-menu">
                     <button onClick={() => setGamePaused(false)}>Resume Game</button>
                     <button onClick={endGame}>End Race</button>
+                    <button onClick={() => setShowHowToPlay(true)}>How to Play</button>
                     <button onClick={showScoreboard}>Scoreboard</button>
+                    <button onClick={() => setIsMusicOn(!isMusicOn)}>{isMusicOn ? 'Music On' : 'Music Off'}</button>
                     <button onClick={restartGame}>Restart</button>
                 </div>
             ) : null}
