@@ -14,11 +14,11 @@ const App = () => {
     setGameStarted(true); // Update the state to indicate the game has started
   };
 
-  const endGame = () => {
-    console.log("Game ended");
-    setGameStarted(false); 
-    setPlayerName('');
-  };
+const endGame = () => {
+    console.log("Game ended"); // Logging the game end
+    setGameStarted(false); // Réinitialiser pour montrer `StartScreen`
+    setPlayerName(''); // Clear the player name
+};
 
   return (
     <div className="App">
