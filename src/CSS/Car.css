@@ -1,0 +1,14 @@
+.player-car {
+  position: absolute;
+  transition: left 0.2s ease-in-out, bottom 0.2s ease-in-out; /* Smooth transitions for movement */
+  bottom: 5%; /* Default bottom position */
+  left: 50%; /* Centers the car at the start */
+  transform: translateX(-50%); /* Centers the car based on its width */
+}
+
+/* Example obstacle styling, this is optional */
+.obstacle {
+  background-color: rgb(255, 49, 193);
+  border-radius: 5px;
+  position: absolute;
+}

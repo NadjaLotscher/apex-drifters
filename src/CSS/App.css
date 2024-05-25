@@ -1,3 +1,13 @@
+@font-face {
+  font-family: 'Olive Days';
+  src: url('../fonts/Olive Days.ttf') format('truetype');
+}
+
+body {
+  font-family: 'Olive Days', sans-serif;
+}
+
+
 .App {
   text-align: center;
 }

@@ -14,22 +14,19 @@ const App = () => {
     setGameStarted(true); // Update the state to indicate the game has started
   };
 
-  const endGame = () => {
+const endGame = () => {
+    console.log("Game ended"); // Logging the game end
     setGameStarted(false); // Réinitialiser pour montrer `StartScreen`
-  };
-  
-  // Pass this function as a prop to GameScreen
-  <GameScreen playerName={playerName} onGameEnd={endGame} />
-  
+    setPlayerName(''); // Clear the player name
+};
 
   return (
     <div className="App">
       {gameStarted ? (
-        <GameScreen playerName={playerName} />
+        <GameScreen playerName={playerName} onGameEnd={endGame} />
       ) : (
         <StartScreen onStartGame={startGame} />
       )}
-      {/* You can also conditionally render other components based on the state */}
     </div>
   );
 };
