@@ -2,4 +2,5 @@
 .obstacle {
   background-color: rgb(255, 49, 193);
   border-radius: 5px;
+  position: absolute;
 }

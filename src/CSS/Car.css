@@ -6,9 +6,3 @@
   transform: translateX(-50%); /* Centers the car based on its width */
 }
 
-/* Example obstacle styling, this is optional */
-.obstacle {
-  background-color: rgb(255, 49, 193);
-  border-radius: 5px;
-  position: absolute;
-}
