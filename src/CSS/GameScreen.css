@@ -4,16 +4,13 @@
 }
 
 .game-screen {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  height: 100vh;
-  width: 100vw;
-  margin: auto;
-  background-color: #ff95f1;
   position: relative;
+  width: 100%;
+  height: 100vh;
+  background: #f0f0f0;
   overflow: hidden;
 }
+
 
 .button-container {
   width: 100%; /* Full width to align center */
@@ -34,14 +31,13 @@
 }
 
 .track {
-  width: 400px;
-  height: 1046px;
-  position: relative;
-  background-color: #fffb00;
+  width: 700px; /* Adjust the track width */
+  height: 100%;
+  margin: 0 auto;
   background-image: url('../assets/15_long-road-in-game-mockup_half.png');
   background-size: cover;
   background-position: center;
-  margin: auto; /* Center the track */
+  position: relative;
 }
 
 .pause-menu {
@@ -73,4 +69,11 @@
 
 .pause-menu button:hover {
   background-color: #ffd700;
+}
+
+.fuel-pickup {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  background: green;
 }

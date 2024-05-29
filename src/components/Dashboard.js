@@ -1,6 +1,7 @@
 import React from 'react';
 import '../CSS/Dashboard.css';
 
+/*
 const Dashboard = ({ score, fuel }) => {
     return (
         <div className="dashboard">
@@ -20,5 +21,15 @@ const Dashboard = ({ score, fuel }) => {
         </div>
     );
 };
+*/
+
+const Dashboard = ({ score, fuel }) => {
+    return (
+      <div className="dashboard">
+        <div className="score">Score: {score}</div>
+        <div className="fuel">Fuel: {fuel.toFixed(1)}</div>
+      </div>
+    );
+  };
 
 export default Dashboard;
