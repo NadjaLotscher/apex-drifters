@@ -1,181 +1,272 @@
-import React, { useState, useEffect } from "react";
-import Scoreboard from "./Scoreboard";
-import Car from "./Car";
+import React, { useState, useEffect, useRef } from "react";
 import Dashboard from "./Dashboard";
-import Obstacle from "./Obstacle";
+import HowToPlayModal from "./HowToPlayModal";
+import backgroundMusic from "../assets/audio.mp3";
+import carImage from "../assets/car_03.png";
 import "../CSS/GameScreen.css";
-import HowToPlayModal from './HowToPlayModal'; // Importation du composant modal How to Play
-import backgroundMusic from '../assets/audio.mp3'; // Importation du fichier audio
+import "../CSS/Car.css";
+import "../CSS/Obstacle.css";
+
+const initialFuel = 100;
+const fuelConsumptionRate = 0.1;
+const collisionFuelPenalty = 0.5;
+const fuelPickupAmount = 20;
+const gameSpeed = 50; 
+const carMoveSpeed = 1; // Increased speed of the car's smooth movement
+const obstacleMoveSpeed = 2.5; // Decreased obstacle/fuel movement speed
 
 const GameScreen = ({ playerName, onGameEnd }) => {
-    const [gamePaused, setGamePaused] = useState(false);
-    const [showingScoreboard, setShowingScoreboard] = useState(false);
-    const [position, setPosition] = useState({ x: 2, y: 10 });  // Initial car position
-    const [fuel, setFuel] = useState(100);
-    const [score, setScore] = useState(0);
-    const [obstacles, setObstacles] = useState([]);
-    const [carDimensions, setCarDimensions] = useState({ width: 45, height: 70 });
-    const [isMusicOn, setIsMusicOn] = useState(true);
-    const [showHowToPlay, setShowHowToPlay] = useState(false); // State for displaying How to Play modal
-    const lanes = [12.5, 37.5, 62.5, 87.5];
+  const [gamePaused, setGamePaused] = useState(false);
+  const [showingScoreboard, setShowingScoreboard] = useState(false);
+  const [score, setScore] = useState(0);
+  const [isMusicOn, setIsMusicOn] = useState(false);
+  const [showHowToPlay, setShowHowToPlay] = useState(false);
+  const [carPosition, setCarPosition] = useState(50); // Initial car position (percentage)
+  const [fuel, setFuel] = useState(initialFuel);
+  const [obstacles, setObstacles] = useState([]);
+  const [fuelPickups, setFuelPickups] = useState([]);
+  const [isPlaying, setIsPlaying] = useState(true);
+
+  const trackRef = useRef(null);
+  const gameLoopInterval = useRef(null);
+  const moveInterval = useRef(null);
+  const movingLeft = useRef(false);
+  const movingRight = useRef(false);
 
   useEffect(() => {
-    const music = document.getElementById('backgroundMusic');
+    const music = document.getElementById("backgroundMusic");
     if (isMusicOn) {
-      music.play().catch(error => console.log("Error playing music:", error));
+      music.play().catch((error) => console.log("Error playing music:", error));
     } else {
       music.pause();
     }
   }, [isMusicOn]);
 
-    const togglePause = () => setGamePaused(!gamePaused);
-    const endGame = () => {
-        console.log("Game ended");
-        onGameEnd();
-        setGamePaused(false);
-        setShowingScoreboard(false);
-    };
+  const togglePause = () => setGamePaused(!gamePaused);
+  const endGame = () => {
+    console.log("Game ended");
+    onGameEnd();
+    setGamePaused(false);
+    setShowingScoreboard(false);
+  };
 
-    const showScoreboard = () => {
-        setShowingScoreboard(true);
-        setGamePaused(false);
-    };
+  const showScoreboard = () => {
+    setShowingScoreboard(true);
+    setGamePaused(false);
+  };
 
-    const restartGame = () => {
-        setScore(0);
-        setFuel(100);
-        setPosition({ x: 2, y: 10 });
-        setObstacles([]);
-        setGamePaused(false);
-        setShowingScoreboard(false);
-    };
-  
+  const restartGame = () => {
+    setScore(0);
+    setFuel(100);
+    setGamePaused(false);
+    setShowingScoreboard(false);
+  };
+
   const toggleMusic = () => {
     setIsMusicOn(!isMusicOn);
   };
 
   const handleHowToPlay = () => {
-    setShowHowToPlay(true); // Affiche la modal How to Play
+    setShowHowToPlay(true); 
   };
 
   const closeHowToPlay = () => {
-    setShowHowToPlay(false); // Ferme la modal How to Play
+    setShowHowToPlay(false); 
   };
 
-    useEffect(() => {
-        const handleKeyDown = (event) => {
-            if (!gamePaused) {
-                switch (event.key) {
-                    case "ArrowLeft":
-                        setPosition((prev) => ({ ...prev, x: Math.max(prev.x - 1, 0) }));
-                        break;
-                    case "ArrowRight":
-                        setPosition((prev) => ({ ...prev, x: Math.min(prev.x + 1, lanes.length - 1) }));
-                        break;
-                    default:
-                        break;
-                }
-            }
-        };
-        window.addEventListener("keydown", handleKeyDown);
-        return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [gamePaused, lanes]);
+  const handleKeyDown = (e) => {
+    if (gamePaused) return;
 
-    useEffect(() => {
-        const interval = setInterval(() => {
-            if (!gamePaused) {
-                setScore(score + 1);
-                setFuel((prevFuel) => Math.max(0, prevFuel - 0.1));
-                
-                if (fuel <= 0) {
-                    console.log('Fuel ran out');
-                    clearInterval(interval);
-                    endGame();
-                }
+    if (e.key === "ArrowLeft") {
+      movingLeft.current = true;
+      movingRight.current = false;
+    } else if (e.key === "ArrowRight") {
+      movingRight.current = true;
+      movingLeft.current = false;
+    }
+  };
 
-                if (Math.random() < 0.05) {
-                    const lane = lanes[Math.floor(Math.random() * lanes.length)];
-                    const newObstacle = new Obstacle(lane, 0, 20, 20, 2);
-                    setObstacles((prev) => [...prev, newObstacle]);
-                }
+  const handleKeyUp = (e) => {
+    if (e.key === "ArrowLeft") {
+      movingLeft.current = false;
+    } else if (e.key === "ArrowRight") {
+      movingRight.current = false;
+    }
+  };
 
-                setObstacles((prev) =>
-                    prev.map((obstacle) => {
-                        obstacle.update();
-                        return obstacle;
-                    }).filter((obstacle) => obstacle.y < 600)
-                );
-            }
-        }, 1000 / 60);
-        return () => clearInterval(interval);
-    }, [score, fuel, gamePaused, lanes]);
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, [gamePaused]);
 
-    useEffect(() => {
-        let collisionDetected = false;
-        obstacles.forEach((obstacle) => {
-            const carBottom = 600 - position.y - carDimensions.height;
-            const carRect = {
-                x: lanes[position.x] - carDimensions.width / 2,
-                y: carBottom,
-                width: carDimensions.width,
-                height: carDimensions.height,
-            };
+  useEffect(() => {
+    if (isPlaying && !gamePaused) {
+      gameLoopInterval.current = setInterval(gameLoop, gameSpeed);
+    } else {
+      clearInterval(gameLoopInterval.current);
+    }
+    return () => clearInterval(gameLoopInterval.current);
+  }, [isPlaying, gamePaused, fuel, obstacles, fuelPickups]);
 
-            console.log(`Car Rect: x=${carRect.x}, y=${carRect.y}, width=${carRect.width}, height=${carRect.height}`);
-            console.log(`Obstacle: x=${obstacle.x}, y=${obstacle.y}, width=${obstacle.width}, height=${obstacle.height}`);
-            if (obstacle.collidesWith(carRect)) {
-                console.log('Collision Detected!', obstacle, carRect);
-                collisionDetected = true;
-            }
-        });
+  useEffect(() => {
+    if (isPlaying && !gamePaused) {
+      moveInterval.current = setInterval(() => {
+        const trackWidth = trackRef.current ? trackRef.current.offsetWidth : 700;
+        const carWidth = trackRef.current ? trackRef.current.querySelector('.car').offsetWidth : 50;
 
-        if (collisionDetected) {
-            endGame();
+        if (movingLeft.current) {
+          setCarPosition((prev) => Math.max(prev - carMoveSpeed, 0));
         }
-    }, [obstacles, position, lanes, carDimensions]);
+        if (movingRight.current) {
+          setCarPosition((prev) => Math.min(prev + carMoveSpeed, 100 * (trackWidth - carWidth) / trackWidth));
+        }
+      }, 5); // Adjust this value for smoother movement
+    } else {
+      clearInterval(moveInterval.current);
+    }
+    return () => clearInterval(moveInterval.current);
+  }, [isPlaying, gamePaused]);
 
-    return (
-        <div className="game-screen">
-            <audio id="backgroundMusic" loop>
-                <source src={backgroundMusic} type="audio/mpeg" />
-            </audio>
-            {showHowToPlay && (
-                <HowToPlayModal
-                    isOpen={showHowToPlay}
-                    onClose={() => setShowHowToPlay(false)}
-                    text="Instructions..."
-                />
-            )}
-            <Dashboard score={score} fuel={fuel} />
-            {gamePaused ? (
-                <div className="pause-menu">
-                    <button onClick={() => setGamePaused(false)}>Resume Game</button>
-                    <button onClick={endGame}>End Race</button>
-                    <button onClick={() => setShowHowToPlay(true)}>How to Play</button>
-                    <button onClick={showScoreboard}>Scoreboard</button>
-                    <button onClick={() => setIsMusicOn(!isMusicOn)}>{isMusicOn ? 'Music On' : 'Music Off'}</button>
-                    <button onClick={restartGame}>Restart</button>
-                </div>
-            ) : null}
-            <div className="track">
-                <Car position={{ x: lanes[position.x], y: position.y }} setCarDimensions={setCarDimensions} />
-                {obstacles.map((obstacle, index) => (
-                    <div
-                        key={index}
-                        className="obstacle"
-                        style={{
-                            position: "absolute",
-                            top: obstacle.y,
-                            left: `${obstacle.x}%`,
-                            width: `${obstacle.width}px`,
-                            height: `${obstacle.height}px`,
-                            backgroundColor: "black",
-                        }}
-                    ></div>
-                ))}
-            </div>
-        </div>
+  const gameLoop = () => {
+    setFuel((prev) => Math.max(prev - fuelConsumptionRate, 0));
+
+    setObstacles((prev) =>
+      prev
+        .map((obstacle) => ({ ...obstacle, y: obstacle.y + obstacleMoveSpeed }))
+        .filter((obstacle) => obstacle.y < 100)
     );
+
+    setFuelPickups((prev) =>
+      prev
+        .map((fuelPickup) => ({ ...fuelPickup, y: fuelPickup.y + obstacleMoveSpeed }))
+        .filter((fuelPickup) => fuelPickup.y < 100)
+    );
+
+    checkCollisions();
+    spawnElements();
+  };
+
+  const checkCollisions = () => {
+    const trackWidth = trackRef.current ? trackRef.current.offsetWidth : 700;
+    const carWidth = 55; // Adjusted to match the CSS
+    const carHeight = 100; // Adjusted to match the CSS
+    const carLeft = (carPosition / 100) * trackWidth;
+    const carRight = carLeft + carWidth;
+    const carTop = trackRef.current ? trackRef.current.offsetHeight - carHeight : 0;
+    const carBottom = carTop + carHeight;
+    const carElement = document.querySelector('.car');
+
+    console.log(`Car: left=${carLeft}, right=${carRight}, top=${carTop}, bottom=${carBottom}`);
+
+    obstacles.forEach((obstacle, index) => {
+      const obstacleElement = document.querySelectorAll('.obstacle')[index];
+      if (obstacleElement && carElement) {
+        const carRect = carElement.getBoundingClientRect();
+        const obstacleRect = obstacleElement.getBoundingClientRect();
+  
+        if (
+          carRect.left < obstacleRect.left + obstacleRect.width &&
+          carRect.left + carRect.width > obstacleRect.left &&
+          carRect.top < obstacleRect.top + obstacleRect.height &&
+          carRect.top + carRect.height > obstacleRect.top
+        ) {
+          console.log("Collision with obstacle detected!");
+          setFuel((prevFuel) => prevFuel - collisionFuelPenalty);
+        }
+      }
+    });
+
+    fuelPickups.forEach((fuelPickup, index) => {
+      const fuelPickupLeft = (fuelPickup.x / 100) * trackWidth;
+      const fuelPickupRight = fuelPickupLeft + 30;
+      const fuelPickupTop = fuelPickup.y;
+      const fuelPickupBottom = fuelPickupTop + 30;
+      const fuelPickupElement = document.querySelectorAll('.fuel-pickup')[index];
+
+      console.log(`Fuel Pickup ${index}: left=${fuelPickupLeft}, right=${fuelPickupRight}, top=${fuelPickupTop}, bottom=${fuelPickupBottom}`);
+
+      if (fuelPickupElement && carElement) {
+        const carRect = carElement.getBoundingClientRect();
+        const fuelPickupRect = fuelPickupElement.getBoundingClientRect();
+  
+        if (
+          carRect.left < fuelPickupRect.left + fuelPickupRect.width &&
+          carRect.left + carRect.width > fuelPickupRect.left &&
+          carRect.top < fuelPickupRect.top + fuelPickupRect.height &&
+          carRect.top + carRect.height > fuelPickupRect.top
+        ) {
+          console.log("Fuel pickup detected!");
+          setFuel((prevFuel) => Math.min(prevFuel + fuelPickupAmount, 100));
+          setFuelPickups((prev) => prev.filter((fp) => fp !== fuelPickup));
+        }
+      }
+    });
+  };
+
+  const spawnElements = () => {
+    if (Math.random() < 0.1) {
+      setObstacles((prev) => [...prev, { x: Math.random() * 100, y: 0 }]);
+    }
+    if (Math.random() < 0.05) {
+      setFuelPickups((prev) => [...prev, { x: Math.random() * 100, y: 0 }]);
+    }
+  };
+
+  return (
+    <div className="game-screen">
+      <audio id="backgroundMusic" src={backgroundMusic} loop />
+      {showHowToPlay && (
+        <HowToPlayModal
+          isOpen={showHowToPlay}
+          onClose={closeHowToPlay}
+          text="Use the arrow keys to move the car left and right. Avoid obstacles and collect fuel to keep going!"
+        />
+      )}
+      <Dashboard score={score} fuel={fuel} />
+      {gamePaused ? (
+        <div className="pause-menu">
+          <button onClick={togglePause}>Resume Game</button>
+          <button onClick={endGame}>End Race</button>
+          <button onClick={handleHowToPlay}>How to Play</button>
+          <button onClick={toggleMusic}>
+            {isMusicOn ? "Music On" : "Music Off"}
+          </button>
+          <button onClick={restartGame}>Restart</button>
+        </div>
+      ) : (
+        <button onClick={togglePause} className="pause-button">
+          Pause
+        </button>
+      )}
+      <div className="track" ref={trackRef}>
+        <div
+          className="car"
+          style={{ left: `${carPosition}%` }}
+        ></div>
+        {obstacles.map((obstacle, index) => (
+          <div
+            key={index}
+            className="obstacle"
+            style={{ left: `${obstacle.x}%`, top: `${obstacle.y}%` }}
+          />
+        ))}
+        {fuelPickups.map((fuelPickup, index) => (
+          <div
+            key={index}
+            className="fuel-pickup"
+            style={{ left: `${fuelPickup.x}%`, top: `${fuelPickup.y}%` }}
+          />
+        ))}
+      </div>
+      <div className="fuel-bar">
+        Fuel: {fuel.toFixed(1)}
+      </div>
+    </div>
+  );
 };
 
 export default GameScreen;
