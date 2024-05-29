@@ -1,0 +1,18 @@
+.power-ups-list {
+    display: flex;
+    justify-content: space-around;
+    padding: 20px;
+  }
+  
+  .power-up-item {
+    text-align: center;
+    flex: 1;
+  }
+  
+  .power-up-item img {
+    width: 100px; 
+    height: auto;
+    display: block;
+    margin: 0 auto 10px;
+  }
+  

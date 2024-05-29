@@ -1,35 +1,49 @@
 import React, { useState } from 'react';
 import StartScreen from './components/StartScreen';
 import GameScreen from './components/GameScreen';
+import VehicleSelectionScreen from './components/VehicleSelectionScreen'; // Assurez-vous d'importer le nouveau composant
 import './CSS/App.css';
 
 const App = () => {
-  const [gameStarted, setGameStarted] = useState(false);
+  const [currentScreen, setCurrentScreen] = useState('start'); // 'start', 'selectVehicle', 'game'
   const [playerName, setPlayerName] = useState('');
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
 
-  // Function to start the game
-  const startGame = (playerName) => {
-    console.log('Game started with player:', playerName);
-    setPlayerName(playerName); // add save the player's name
-    setGameStarted(true); // Update the state to indicate the game has started
+  const vehicles = [
+    { name: 'Blue Car', image: '/images/BlueCar.png' },
+    { name: 'Grey Car', image: '/images/GreyCar.png' },
+    { name: 'Orange Car', image: '/images/OrangeCar.png' },
+    { name: 'Pink Car', image: '/images/PinkCar.png' }
+  ];
+  
+  
+  
+
+  const handleStartGame = (playerName) => {
+    setPlayerName(playerName);
+    setCurrentScreen('selectVehicle');
   };
 
-  const endGame = () => {
-    setGameStarted(false); // Réinitialiser pour montrer `StartScreen`
+  const handleSelectVehicle = (vehicle) => {
+    setSelectedVehicle(vehicle); // Suppose que vehicle est l'objet ou l'ID du véhicule sélectionné
+    setCurrentScreen('game');
   };
-  
-  // Pass this function as a prop to GameScreen
-  <GameScreen playerName={playerName} onGameEnd={endGame} />
-  
+
+  const handleGameEnd = () => {
+    setCurrentScreen('start'); // Retour à l'écran de démarrage pour recommencer
+  };
 
   return (
     <div className="App">
-      {gameStarted ? (
-        <GameScreen playerName={playerName} />
-      ) : (
-        <StartScreen onStartGame={startGame} />
+      {currentScreen === 'start' && (
+        <StartScreen onStartGame={handleStartGame} />
       )}
-      {/* You can also conditionally render other components based on the state */}
+      {currentScreen === 'selectVehicle' && (
+        <VehicleSelectionScreen vehicles={vehicles} onSelectVehicle={handleSelectVehicle} />
+      )}
+      {currentScreen === 'game' && (
+        <GameScreen playerName={playerName} onGameEnd={handleGameEnd} />
+      )}
     </div>
   );
 };

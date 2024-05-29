@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import backgroundMusic from '../assets/audio.mp3'; // Importation du fichier audio
 import Scoreboard from './Scoreboard';
 import HowToPlayModal from './HowToPlayModal'; // Importation du composant modal How to Play
+import PowerUpsModal from './PowerUpsModal';
 import '../CSS/GameScreen.css'; // Assurez-vous que le chemin est correct pour les styles CSS
 
 const GameScreen = ({ playerName, onGameEnd }) => {
@@ -23,6 +24,13 @@ const GameScreen = ({ playerName, onGameEnd }) => {
   const togglePause = () => {
     setGamePaused(!gamePaused);
   };
+
+  const [showPowerUpsModal, setShowPowerUpsModal] = useState(false);
+
+const handlePowerUpsClick = () => {
+  setShowPowerUpsModal(true); // Pour afficher la modal
+};
+
 
   const endGame = () => {
     onGameEnd();
@@ -56,6 +64,7 @@ const GameScreen = ({ playerName, onGameEnd }) => {
 
   return (
     <div className="game-screen">
+      <PowerUpsModal isOpen={showPowerUpsModal} onClose={() => setShowPowerUpsModal(false)} />
       <audio id="backgroundMusic" loop>
         <source src={backgroundMusic} type="audio/mpeg" />
       </audio>
@@ -78,6 +87,7 @@ const GameScreen = ({ playerName, onGameEnd }) => {
       {gamePaused && !showingScoreboard ? (
         <div className="pause-menu">
           <button onClick={() => setGamePaused(false)}>Resume Game</button>
+          <button onClick={handlePowerUpsClick}>Power-ups</button>
           <button onClick={endGame}>End Race</button>
           <button onClick={handleHowToPlay}>How to Play</button>
           <button onClick={showScoreboard}>Scoreboard</button>
