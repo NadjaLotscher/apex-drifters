@@ -24,6 +24,7 @@ const App = () => {
     setCurrentScreen('selectVehicle');
   };
 
+
   const handleSelectVehicle = (vehicle) => {
     setSelectedVehicle(vehicle); // Suppose que vehicle est l'objet ou l'ID du véhicule sélectionné
     setCurrentScreen('game');
@@ -43,6 +44,20 @@ const App = () => {
       )}
       {currentScreen === 'game' && (
         <GameScreen playerName={playerName} onGameEnd={handleGameEnd} />
+
+const endGame = () => {
+    console.log("Game ended"); // Logging the game end
+    setGameStarted(false); // Réinitialiser pour montrer `StartScreen`
+    setPlayerName(''); // Clear the player name
+};
+
+  return (
+    <div className="App">
+      {gameStarted ? (
+        <GameScreen playerName={playerName} onGameEnd={endGame} />
+      ) : (
+        <StartScreen onStartGame={startGame} />
+
       )}
     </div>
   );

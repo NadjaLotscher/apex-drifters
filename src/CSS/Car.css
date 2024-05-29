@@ -1,0 +1,9 @@
+.car {
+  position: absolute;
+  bottom: 10%;
+  width: 55px;
+  height: 100px;
+  background-image: url('../assets/car_03.png');
+  background-size: cover;
+  transform: translateX(-50%);
+}
