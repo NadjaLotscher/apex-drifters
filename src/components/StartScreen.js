@@ -14,7 +14,7 @@ const StartScreen = ({ onStartGame }) => {
         value={playerName}
         onChange={(e) => setPlayerName(e.target.value)}
       />
-      <button onClick={() => onStartGame(playerName)}>Start Game</button>
+      <button onClick={() => onStartGame(playerName)}>Choose your vehicle</button>
     </div>
   );
 };

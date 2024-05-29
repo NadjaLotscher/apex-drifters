@@ -1,3 +1,6 @@
+
+import PowerUpsModal from './PowerUpsModal';
+
 import React, { useState, useEffect, useRef } from "react";
 import Dashboard from "./Dashboard";
 import HowToPlayModal from "./HowToPlayModal";
@@ -14,6 +17,7 @@ const fuelPickupAmount = 20;
 const gameSpeed = 50; 
 const carMoveSpeed = 1; // Increased speed of the car's smooth movement
 const obstacleMoveSpeed = 2.5; // Decreased obstacle/fuel movement speed
+
 
 const GameScreen = ({ playerName, onGameEnd }) => {
   const [gamePaused, setGamePaused] = useState(false);
@@ -42,7 +46,19 @@ const GameScreen = ({ playerName, onGameEnd }) => {
     }
   }, [isMusicOn]);
 
-  const togglePause = () => setGamePaused(!gamePaused);
+
+  const togglePause = () => {
+    setGamePaused(!gamePaused);
+  };
+
+  const [showPowerUpsModal, setShowPowerUpsModal] = useState(false);
+
+const handlePowerUpsClick = () => {
+  setShowPowerUpsModal(true); // Pour afficher la modal
+};
+
+
+
   const endGame = () => {
     console.log("Game ended");
     onGameEnd();
@@ -218,6 +234,9 @@ const GameScreen = ({ playerName, onGameEnd }) => {
 
   return (
     <div className="game-screen">
+
+      <PowerUpsModal isOpen={showPowerUpsModal} onClose={() => setShowPowerUpsModal(false)} />
+     
       <audio id="backgroundMusic" src={backgroundMusic} loop />
       {showHowToPlay && (
         <HowToPlayModal
