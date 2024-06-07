@@ -1,25 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import '../CSS/VehicleSelectionScreen.css';
 
-const VehicleSelectionScreen = ({ vehicles, onSelectVehicle }) => {
+// Import des images directement
+import blueCarImage from '../assets/Pictures/BlueCar.png';
+import orangeCarImage from '../assets/Pictures/OrangeCar.png';
+import pinkCarImage from '../assets/Pictures/PinkCar.png';
+import greyCarImage from '../assets/Pictures/GreyCar.png';
+
+const vehicles = [
+  { name: 'Blue Car', image: blueCarImage },
+  { name: 'Orange Car', image: orangeCarImage },
+  { name: 'Pink Car', image: pinkCarImage },
+  { name: 'Grey Car', image: greyCarImage }
+];
+
+const VehicleSelectionScreen = ({ onSelectVehicle }) => {
   const [selectedVehicleIndex, setSelectedVehicleIndex] = useState(0);
 
   useEffect(() => {
-  const handleKeyPress = (event) => {
-    if (event.key === 'ArrowRight') {
-      setSelectedVehicleIndex((prevIndex) => (prevIndex + 1) % vehicles.length);
-    } else if (event.key === 'ArrowLeft') {
-      setSelectedVehicleIndex((prevIndex) => (prevIndex - 1 + vehicles.length) % vehicles.length);
-    }
-  };
+    const handleKeyPress = (event) => {
+      if (event.key === 'ArrowRight') {
+        setSelectedVehicleIndex((prevIndex) => (prevIndex + 1) % vehicles.length);
+      } else if (event.key === 'ArrowLeft') {
+        setSelectedVehicleIndex((prevIndex) => (prevIndex - 1 + vehicles.length) % vehicles.length);
+      }
+    };
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [vehicles.length]);
-
-  if (!vehicles || vehicles.length === 0) {
-    return <div>Loading vehicles...</div>; // ou une autre gestion d'erreur appropriée
-  }
 
   return (
     <div className="vehicle-selection-screen">
