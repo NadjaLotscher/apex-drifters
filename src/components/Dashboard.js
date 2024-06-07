@@ -26,8 +26,8 @@ const Dashboard = ({ score, fuel }) => {
 const Dashboard = ({ score, fuel }) => {
     return (
       <div className="dashboard">
-        <div className="score">Score: {score}</div>
-        <div className="fuel">Fuel: {fuel.toFixed(1)}</div>
+        <div className="score">Score: {Math.floor(score)}</div>
+        <div className="fuel">Fuel: {Math.floor(fuel)}</div>
       </div>
     );
   };

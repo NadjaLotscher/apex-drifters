@@ -6,14 +6,25 @@ import backgroundMusic from "../assets/audio.mp3";
 import "../CSS/GameScreen.css";
 import "../CSS/Car.css";
 import "../CSS/Obstacle.css";
+import "../CSS/Fuel.css"; // Import the Fuel.css
 
 const initialFuel = 100;
-const fuelConsumptionRate = 0.1;
-const collisionFuelPenalty = 0.5;
+const fuelConsumptionRate = 0.5;
+const collisionFuelPenalty = 5;
 const fuelPickupAmount = 20;
-const gameSpeed = 50;
+const gameSpeed = 50; 
 const carMoveSpeed = 1; 
-const obstacleMoveSpeed = 2.5; 
+const obstacleMoveSpeed = 2.5;
+const CarMarginLeft = 10; // Margin for car on the left
+const CarMarginRight = 5; // Margin for car on the right
+const ObstacleMarginLeft = 5; // Margin for obstacles on the left
+const ObstacleMarginRight = 10; // Margin for obstacles on the right
+const FuelPickupMarginLeft = 10; // Margin for fuel pickups on the left
+const FuelPickupMarginRight = 10; // Margin for fuel pickups on the right
+const scoreIncrementPerSecond = 1; // Define the score increment per second
+
+const obstacleClasses = ["obstacle1", "obstacle2", "obstacle3", "obstacle4", "obstacle5", "obstacle6"]; // for the random obstacle pictures
+
 
 const GameScreen = ({ playerName, selectedVehicle, onGameEnd }) => {
   const [gamePaused, setGamePaused] = useState(false);
@@ -45,11 +56,13 @@ const GameScreen = ({ playerName, selectedVehicle, onGameEnd }) => {
   }, [isMusicOn]);
 
   const togglePause = () => setGamePaused(!gamePaused);
+  
   const endGame = () => {
     console.log("Game ended");
-    onGameEnd();
-    setGamePaused(false);
-    setShowingScoreboard(false);
+    setIsPlaying(false);
+    setGamePaused(true);
+    setShowingScoreboard(true);
+    onGameEnd(); 
   };
 
   const showScoreboard = () => {
@@ -59,11 +72,13 @@ const GameScreen = ({ playerName, selectedVehicle, onGameEnd }) => {
 
   const restartGame = () => {
     setScore(0);
-    setFuel(100);
+    setFuel(initialFuel);
     setGamePaused(false);
     setShowingScoreboard(false);
+    setIsPlaying(true);
     setHasShield(false);
   };
+
 
   const toggleMusic = () => {
     setIsMusicOn(!isMusicOn);
@@ -143,7 +158,7 @@ const GameScreen = ({ playerName, selectedVehicle, onGameEnd }) => {
     }
     return () => clearInterval(gameLoopInterval.current);
   }, [isPlaying, gamePaused, fuel, obstacles, fuelPickups]);
-
+  
   useEffect(() => {
     if (isPlaying && !gamePaused) {
       moveInterval.current = setInterval(() => {
@@ -151,10 +166,10 @@ const GameScreen = ({ playerName, selectedVehicle, onGameEnd }) => {
         const carWidth = trackRef.current ? trackRef.current.querySelector('.car').offsetWidth : 50;
 
         if (movingLeft.current) {
-          setCarPosition((prev) => Math.max(prev - carMoveSpeed, 0));
+          setCarPosition((prev) => Math.max(prev - carMoveSpeed, CarMarginLeft));
         }
         if (movingRight.current) {
-          setCarPosition((prev) => Math.min(prev + carMoveSpeed, 100 * (trackWidth - carWidth) / trackWidth));
+          setCarPosition((prev) => Math.min(prev + carMoveSpeed, 100 * (trackWidth - carWidth) / trackWidth - CarMarginRight));
         }
       }, 5);
     } else {
@@ -164,7 +179,15 @@ const GameScreen = ({ playerName, selectedVehicle, onGameEnd }) => {
   }, [isPlaying, gamePaused]);
 
   const gameLoop = () => {
-    setFuel((prev) => Math.max(prev - fuelConsumptionRate, 0));
+    setFuel((prev) => {
+      const newFuel = Math.max(prev - fuelConsumptionRate, 0);
+      if (newFuel === 0) {
+        endGame(); // Call endGame function
+      }
+      return newFuel;
+    });
+
+    setScore((prev) => prev + (scoreIncrementPerSecond * gameSpeed) / 1000);
 
     setObstacles((prev) =>
       prev
@@ -184,74 +207,91 @@ const GameScreen = ({ playerName, selectedVehicle, onGameEnd }) => {
 
 const checkCollisions = () => {
   const trackWidth = trackRef.current ? trackRef.current.offsetWidth : 700;
-  const carWidth = 55;
-  const carHeight = 100;
-  const carLeft = (carPosition / 100) * trackWidth;
-  const carRight = carLeft + carWidth;
-  const carTop = trackRef.current ? trackRef.current.offsetHeight - carHeight : 0;
-  const carBottom = carTop + carHeight;
-  const carElement = document.querySelector('.car');
+    const carWidth = 55; // Adjusted to match the CSS
+    const carHeight = 100; // Adjusted to match the CSS
+    const carLeft = (carPosition / 100) * trackWidth;
+    const carRight = carLeft + carWidth;
+    const carTop = trackRef.current ? trackRef.current.offsetHeight - carHeight : 0;
+    const carBottom = carTop + carHeight;
+    const carElement = document.querySelector('.car');
 
-  console.log(`Car: left=${carLeft}, right=${carRight}, top=${carTop}, bottom=${carBottom}`);
+    console.log(`Car: left=${carLeft}, right=${carRight}, top=${carTop}, bottom=${carBottom}`);
 
-  obstacles.forEach((obstacle, index) => {
-    const obstacleElement = document.querySelectorAll('.obstacle')[index];
-    if (obstacleElement && carElement) {
-      const carRect = carElement.getBoundingClientRect();
-      const obstacleRect = obstacleElement.getBoundingClientRect();
-
-      if (
-        carRect.left < obstacleRect.left + obstacleRect.width &&
-        carRect.left + carRect.width > obstacleRect.left &&
-        carRect.top < obstacleRect.top + obstacleRect.height &&
-        carRect.top + carRect.height > obstacleRect.top
-      ) {
-        console.log("Collision with obstacle detected!");
-        if (hasShield) {
-          setHasShield(false); // Désactiver le bouclier après la collision
-        } else {
-          setFuel((prevFuel) => prevFuel - collisionFuelPenalty);
+    obstacles.forEach((obstacle, index) => {
+      const obstacleElement = document.querySelectorAll('.obstacle')[index];
+      if (obstacleElement && carElement) {
+        const carRect = carElement.getBoundingClientRect();
+        const obstacleRect = obstacleElement.getBoundingClientRect();
+  
+        if (
+          carRect.left < obstacleRect.left + obstacleRect.width &&
+          carRect.left + carRect.width > obstacleRect.left &&
+          carRect.top < obstacleRect.top + obstacleRect.height &&
+          carRect.top + carRect.height > obstacleRect.top
+        ) {
+          console.log("Collision with obstacle detected!");
+          if (hasShield) {
+            setHasShield(false); // Deactivate shield after collision
+          } else {
+            setFuel((prevFuel) => prevFuel - collisionFuelPenalty);
+          }
+          setObstacles((prev) => prev.filter((_, i) => i !== index));
         }
       }
-    }
-  });
+    });
 
-  fuelPickups.forEach((fuelPickup, index) => {
-    const fuelPickupLeft = (fuelPickup.x / 100) * trackWidth;
-    const fuelPickupRight = fuelPickupLeft + 30;
-    const fuelPickupTop = fuelPickup.y;
-    const fuelPickupBottom = fuelPickupTop + 30;
-    const fuelPickupElement = document.querySelectorAll('.fuel-pickup')[index];
+    fuelPickups.forEach((fuelPickup, index) => {
+      const fuelPickupLeft = (fuelPickup.x / 100) * trackWidth;
+      const fuelPickupRight = fuelPickupLeft + 30;
+      const fuelPickupTop = fuelPickup.y;
+      const fuelPickupBottom = fuelPickupTop + 30;
+      const fuelPickupElement = document.querySelectorAll('.fuel-pickup')[index];
 
-    console.log(`Fuel Pickup ${index}: left=${fuelPickupLeft}, right=${fuelPickupRight}, top=${fuelPickupTop}, bottom=${fuelPickupBottom}`);
+      console.log(`Fuel Pickup ${index}: left=${fuelPickupLeft}, right=${fuelPickupRight}, top=${fuelPickupTop}, bottom=${fuelPickupBottom}`);
 
-    if (fuelPickupElement && carElement) {
-      const carRect = carElement.getBoundingClientRect();
-      const fuelPickupRect = fuelPickupElement.getBoundingClientRect();
-
-      if (
-        carRect.left < fuelPickupRect.left + fuelPickupRect.width &&
-        carRect.left + carRect.width > fuelPickupRect.left &&
-        carRect.top < fuelPickupRect.top + fuelPickupRect.height &&
-        carRect.top + carRect.height > fuelPickupRect.top
-      ) {
-        console.log("Fuel pickup detected!");
-        setFuel((prevFuel) => Math.min(prevFuel + fuelPickupAmount, 100));
-        setFuelPickups((prev) => prev.filter((fp) => fp !== fuelPickup));
+      if (fuelPickupElement && carElement) {
+        const carRect = carElement.getBoundingClientRect();
+        const fuelPickupRect = fuelPickupElement.getBoundingClientRect();
+  
+        if (
+          carRect.left < fuelPickupRect.left + fuelPickupRect.width &&
+          carRect.left + carRect.width > fuelPickupRect.left &&
+          carRect.top < fuelPickupRect.top + fuelPickupRect.height &&
+          carRect.top + carRect.height > fuelPickupRect.top
+        ) {
+          console.log("Fuel pickup detected!");
+          setFuel((prevFuel) => Math.min(prevFuel + fuelPickupAmount, 100));
+          setFuelPickups((prev) => prev.filter((_, i) => i !== index));
+        }
       }
-    }
-  });
-};
+    });
+  };
+
 
 
   const spawnElements = () => {
     if (Math.random() < 0.1) {
-      setObstacles((prev) => [...prev, { x: Math.random() * 100, y: 0 }]);
+      const randomObstacleClass = obstacleClasses[Math.floor(Math.random() * obstacleClasses.length)];
+      setObstacles((prev) => [
+        ...prev,
+        {
+          x: Math.random() * (100 - ObstacleMarginLeft - ObstacleMarginRight) + ObstacleMarginLeft,
+          y: 0,
+          className: randomObstacleClass,
+        },
+      ]);
     }
     if (Math.random() < 0.05) {
-      setFuelPickups((prev) => [...prev, { x: Math.random() * 100, y: 0 }]);
+      setFuelPickups((prev) => [
+        ...prev,
+        {
+          x: Math.random() * (100 - FuelPickupMarginLeft - FuelPickupMarginRight) + FuelPickupMarginLeft,
+          y: 0,
+        },
+      ]);
     }
   };
+  
 
   return (
     <div className="game-screen">
@@ -295,7 +335,7 @@ const checkCollisions = () => {
         {obstacles.map((obstacle, index) => (
           <div
             key={index}
-            className="obstacle"
+            className={`obstacle ${obstacle.className}`}
             style={{ left: `${obstacle.x}%`, top: `${obstacle.y}%` }}
           />
         ))}
