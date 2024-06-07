@@ -1,32 +1,35 @@
 import React, { useState } from 'react';
 import StartScreen from './components/StartScreen';
 import GameScreen from './components/GameScreen';
+import VehicleSelectionScreen from './components/VehicleSelectionScreen';
 import './CSS/App.css';
 
 const App = () => {
-  const [gameStarted, setGameStarted] = useState(false);
+  const [currentScreen, setCurrentScreen] = useState('start');
   const [playerName, setPlayerName] = useState('');
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
 
-  // Function to start the game
-  const startGame = (playerName) => {
-    console.log('Game started with player:', playerName);
-    setPlayerName(playerName); // add save the player's name
-    setGameStarted(true); // Update the state to indicate the game has started
+  const handleStartGame = (playerName) => {
+    setPlayerName(playerName);
+    setCurrentScreen('selectVehicle');
   };
 
-const endGame = () => {
-    console.log("Game ended"); // Logging the game end
-    setGameStarted(false); // Réinitialiser pour montrer `StartScreen`
-    setPlayerName(''); // Clear the player name
-};
+  const handleSelectVehicle = (vehicle) => {
+    setSelectedVehicle(vehicle);
+    setCurrentScreen('game');
+  };
+
+  const handleGameEnd = () => {
+    setCurrentScreen('start');
+    setPlayerName('');
+    setSelectedVehicle(null);
+  };
 
   return (
     <div className="App">
-      {gameStarted ? (
-        <GameScreen playerName={playerName} onGameEnd={endGame} />
-      ) : (
-        <StartScreen onStartGame={startGame} />
-      )}
+      {currentScreen === 'start' && <StartScreen onStartGame={handleStartGame} />}
+      {currentScreen === 'selectVehicle' && <VehicleSelectionScreen onSelectVehicle={handleSelectVehicle} />}
+      {currentScreen === 'game' && <GameScreen playerName={playerName} selectedVehicle={selectedVehicle} onGameEnd={handleGameEnd} />}
     </div>
   );
 };
