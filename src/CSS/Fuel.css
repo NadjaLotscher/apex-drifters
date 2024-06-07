@@ -1,0 +1,8 @@
+.fuel-pickup {
+    position: absolute;
+    width: 30px;
+    height: 43px;
+    background-image: url('../assets/fuel.png');
+    background-size: cover;
+    background-color: transparent;
+  }

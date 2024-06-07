@@ -1,6 +1,36 @@
+/* GameScreen.css */
 .obstacle {
   position: absolute;
-  width: 50px;
-  height: 50px;
-  background: red;
+  width: 60px;
+  height: 60px;
+}
+
+.obstacle1 {
+  background-image: url('../assets/obstacles1.png');
+  background-size: cover;
+}
+
+.obstacle2 {
+  background-image: url('../assets/obstacles2.png');
+  background-size: cover;
+}
+
+.obstacle3 {
+  background-image: url('../assets/obstacles3.png');
+  background-size: cover;
+}
+
+.obstacle4 {
+  background-image: url('../assets/obstacles4.png');
+  background-size: cover;
+}
+
+.obstacle5 {
+  background-image: url('../assets/obstacles5.png');
+  background-size: cover;
+}
+
+.obstacle6 {
+  background-image: url('../assets/obstacles6.png');
+  background-size: cover;
 }

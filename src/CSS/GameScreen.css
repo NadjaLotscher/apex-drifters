@@ -70,10 +70,3 @@
 .pause-menu button:hover {
   background-color: #ffd700;
 }
-
-.fuel-pickup {
-  position: absolute;
-  width: 30px;
-  height: 30px;
-  background: green;
-}

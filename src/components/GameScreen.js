@@ -6,14 +6,24 @@ import carImage from "../assets/car_03.png";
 import "../CSS/GameScreen.css";
 import "../CSS/Car.css";
 import "../CSS/Obstacle.css";
+import "../CSS/Fuel.css"; // Import the Fuel.css
 
 const initialFuel = 100;
-const fuelConsumptionRate = 0.1;
-const collisionFuelPenalty = 0.5;
+const fuelConsumptionRate = 0.5;
+const collisionFuelPenalty = 5;
 const fuelPickupAmount = 20;
 const gameSpeed = 50; 
-const carMoveSpeed = 1; // Increased speed of the car's smooth movement
-const obstacleMoveSpeed = 2.5; // Decreased obstacle/fuel movement speed
+const carMoveSpeed = 1; 
+const obstacleMoveSpeed = 2.5;
+const CarMarginLeft = 10; // Margin for car on the left
+const CarMarginRight = 5; // Margin for car on the right
+const ObstacleMarginLeft = 5; // Margin for obstacles on the left
+const ObstacleMarginRight = 10; // Margin for obstacles on the right
+const FuelPickupMarginLeft = 10; // Margin for fuel pickups on the left
+const FuelPickupMarginRight = 10; // Margin for fuel pickups on the right
+const scoreIncrementPerSecond = 1; // Define the score increment per second
+
+const obstacleClasses = ["obstacle1", "obstacle2", "obstacle3", "obstacle4", "obstacle5", "obstacle6"]; // for the random obstacle pictures
 
 const GameScreen = ({ playerName, onGameEnd }) => {
   const [gamePaused, setGamePaused] = useState(false);
@@ -21,7 +31,7 @@ const GameScreen = ({ playerName, onGameEnd }) => {
   const [score, setScore] = useState(0);
   const [isMusicOn, setIsMusicOn] = useState(false);
   const [showHowToPlay, setShowHowToPlay] = useState(false);
-  const [carPosition, setCarPosition] = useState(50); // Initial car position (percentage)
+  const [carPosition, setCarPosition] = useState(50); 
   const [fuel, setFuel] = useState(initialFuel);
   const [obstacles, setObstacles] = useState([]);
   const [fuelPickups, setFuelPickups] = useState([]);
@@ -43,11 +53,13 @@ const GameScreen = ({ playerName, onGameEnd }) => {
   }, [isMusicOn]);
 
   const togglePause = () => setGamePaused(!gamePaused);
+  
   const endGame = () => {
     console.log("Game ended");
-    onGameEnd();
-    setGamePaused(false);
-    setShowingScoreboard(false);
+    setIsPlaying(false);
+    setGamePaused(true);
+    setShowingScoreboard(true);
+    onGameEnd(); 
   };
 
   const showScoreboard = () => {
@@ -57,10 +69,11 @@ const GameScreen = ({ playerName, onGameEnd }) => {
 
   const restartGame = () => {
     setScore(0);
-    setFuel(100);
+    setFuel(initialFuel);
     setGamePaused(false);
     setShowingScoreboard(false);
-  };
+    setIsPlaying(true);
+  };  
 
   const toggleMusic = () => {
     setIsMusicOn(!isMusicOn);
@@ -111,7 +124,7 @@ const GameScreen = ({ playerName, onGameEnd }) => {
     }
     return () => clearInterval(gameLoopInterval.current);
   }, [isPlaying, gamePaused, fuel, obstacles, fuelPickups]);
-
+  
   useEffect(() => {
     if (isPlaying && !gamePaused) {
       moveInterval.current = setInterval(() => {
@@ -119,10 +132,10 @@ const GameScreen = ({ playerName, onGameEnd }) => {
         const carWidth = trackRef.current ? trackRef.current.querySelector('.car').offsetWidth : 50;
 
         if (movingLeft.current) {
-          setCarPosition((prev) => Math.max(prev - carMoveSpeed, 0));
+          setCarPosition((prev) => Math.max(prev - carMoveSpeed, CarMarginLeft));
         }
         if (movingRight.current) {
-          setCarPosition((prev) => Math.min(prev + carMoveSpeed, 100 * (trackWidth - carWidth) / trackWidth));
+          setCarPosition((prev) => Math.min(prev + carMoveSpeed, 100 * (trackWidth - carWidth) / trackWidth - CarMarginRight));
         }
       }, 5); // Adjust this value for smoother movement
     } else {
@@ -132,7 +145,15 @@ const GameScreen = ({ playerName, onGameEnd }) => {
   }, [isPlaying, gamePaused]);
 
   const gameLoop = () => {
-    setFuel((prev) => Math.max(prev - fuelConsumptionRate, 0));
+    setFuel((prev) => {
+      const newFuel = Math.max(prev - fuelConsumptionRate, 0);
+      if (newFuel === 0) {
+        endGame(); // Call endGame function
+      }
+      return newFuel;
+    });
+
+    setScore((prev) => prev + (scoreIncrementPerSecond * gameSpeed) / 1000);
 
     setObstacles((prev) =>
       prev
@@ -174,8 +195,8 @@ const GameScreen = ({ playerName, onGameEnd }) => {
           carRect.top < obstacleRect.top + obstacleRect.height &&
           carRect.top + carRect.height > obstacleRect.top
         ) {
-          console.log("Collision with obstacle detected!");
           setFuel((prevFuel) => prevFuel - collisionFuelPenalty);
+          setObstacles((prev) => prev.filter((_, i) => i !== index));
         }
       }
     });
@@ -199,9 +220,8 @@ const GameScreen = ({ playerName, onGameEnd }) => {
           carRect.top < fuelPickupRect.top + fuelPickupRect.height &&
           carRect.top + carRect.height > fuelPickupRect.top
         ) {
-          console.log("Fuel pickup detected!");
           setFuel((prevFuel) => Math.min(prevFuel + fuelPickupAmount, 100));
-          setFuelPickups((prev) => prev.filter((fp) => fp !== fuelPickup));
+          setFuelPickups((prev) => prev.filter((_, i) => i !== index));
         }
       }
     });
@@ -209,12 +229,27 @@ const GameScreen = ({ playerName, onGameEnd }) => {
 
   const spawnElements = () => {
     if (Math.random() < 0.1) {
-      setObstacles((prev) => [...prev, { x: Math.random() * 100, y: 0 }]);
+      const randomObstacleClass = obstacleClasses[Math.floor(Math.random() * obstacleClasses.length)];
+      setObstacles((prev) => [
+        ...prev,
+        {
+          x: Math.random() * (100 - ObstacleMarginLeft - ObstacleMarginRight) + ObstacleMarginLeft,
+          y: 0,
+          className: randomObstacleClass,
+        },
+      ]);
     }
     if (Math.random() < 0.05) {
-      setFuelPickups((prev) => [...prev, { x: Math.random() * 100, y: 0 }]);
+      setFuelPickups((prev) => [
+        ...prev,
+        {
+          x: Math.random() * (100 - FuelPickupMarginLeft - FuelPickupMarginRight) + FuelPickupMarginLeft,
+          y: 0,
+        },
+      ]);
     }
   };
+  
 
   return (
     <div className="game-screen">
@@ -250,7 +285,7 @@ const GameScreen = ({ playerName, onGameEnd }) => {
         {obstacles.map((obstacle, index) => (
           <div
             key={index}
-            className="obstacle"
+            className={`obstacle ${obstacle.className}`}
             style={{ left: `${obstacle.x}%`, top: `${obstacle.y}%` }}
           />
         ))}
