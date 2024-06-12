@@ -1,3 +1,5 @@
+// controllers/CarController.js
+
 class CarController {
     constructor(trackRef, setCarPosition, carMoveSpeed, CarMarginLeft, CarMarginRight, togglePause) {
       this.trackRef = trackRef;
@@ -63,5 +65,4 @@ class CarController {
     }
   }
   
-  export default CarController;
-  
+  export default CarController;  

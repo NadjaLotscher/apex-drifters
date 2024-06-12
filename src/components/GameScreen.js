@@ -344,6 +344,7 @@ useEffect(() => {
 };
 
 
+  // Function to spawn elements
   const spawnElements = () => {
     if (Math.random() < 0.1) {
       const randomObstacleClass = obstacleClasses[Math.floor(Math.random() * obstacleClasses.length)];
