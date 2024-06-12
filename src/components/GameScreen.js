@@ -288,6 +288,7 @@ useEffect(() => {
     );
   };  
 
+  // Function to check for collisions
   const checkCollisions = () => {
     const trackWidth = trackRef.current ? trackRef.current.offsetWidth : 700;
     const carWidth = 55;
@@ -300,48 +301,50 @@ useEffect(() => {
     const carElement = document.querySelector(".car");
 
     obstacles.forEach((obstacle, index) => {
-      const obstacleElement = document.querySelectorAll(".obstacle")[index];
-      if (obstacleElement && carElement) {
-        const carRect = carElement.getBoundingClientRect();
-        const obstacleRect = obstacleElement.getBoundingClientRect();
+        const obstacleElement = document.querySelectorAll(".obstacle")[index];
+        if (obstacleElement && carElement) {
+            const carRect = carElement.getBoundingClientRect();
+            const obstacleRect = obstacleElement.getBoundingClientRect();
 
-        if (
-          carRect.left < obstacleRect.right &&
-          carRect.right > obstacleRect.left &&
-          carRect.top < obstacleRect.bottom &&
-          carRect.bottom > obstacleRect.top
-        ) {
-          console.log("Collision with obstacle detected!");
-          if (hasShield) {
-            setHasShield(false);
-          } else {
-            setFuel((prevFuel) => prevFuel - collisionFuelPenalty);
-          }
-          setObstacles((prev) => prev.filter((_, i) => i !== index));
+            if (
+                carRect.left < obstacleRect.right &&
+                carRect.right > obstacleRect.left &&
+                carRect.top < obstacleRect.bottom &&
+                carRect.bottom > obstacleRect.top
+            ) {
+                console.log("Collision with obstacle detected!");
+                if (hasShield) {
+                    setHasShield(false);
+                } else {
+                    setFuel((prevFuel) => prevFuel - collisionFuelPenalty);
+                }
+                setObstacles((prev) => prev.filter((_, i) => i !== index));
+            }
         }
-      }
     });
 
     fuelPickups.forEach((fuelPickup, index) => {
-      const fuelPickupElement = document.querySelectorAll(".fuel-pickup")[index];
-      if (fuelPickupElement && carElement) {
-        const carRect = carElement.getBoundingClientRect();
-        const fuelPickupRect = fuelPickupElement.getBoundingClientRect();
+        const fuelPickupElement = document.querySelectorAll(".fuel-pickup")[index];
+        if (fuelPickupElement && carElement) {
+            const carRect = carElement.getBoundingClientRect();
+            const fuelPickupRect = fuelPickupElement.getBoundingClientRect();
 
-        if (
-          carRect.left < fuelPickupRect.right &&
-          carRect.right > fuelPickupRect.left &&
-          carRect.top < fuelPickupRect.bottom &&
-          carRect.bottom > fuelPickupRect.top
-        ) {
-          console.log("Fuel pickup detected!");
-          setFuel((prevFuel) => Math.min(prevFuel + fuelPickupAmount, 100));
-          setFuelPickups((prev) => prev.filter((_, i) => i !== index));
+            if (
+                carRect.left < fuelPickupRect.right &&
+                carRect.right > fuelPickupRect.left &&
+                carRect.top < fuelPickupRect.bottom &&
+                carRect.bottom > fuelPickupRect.top
+            ) {
+                console.log("Fuel pickup detected!");
+                setFuel((prevFuel) => Math.min(prevFuel + fuelPickupAmount, 100));
+                setFuelPickups((prev) => prev.filter((_, i) => i !== index));
+            }
         }
-      }
     });
-  };
+};
 
+
+  // Function to spawn elements
   const spawnElements = () => {
     if (Math.random() < 0.1) {
       const randomObstacleClass = obstacleClasses[Math.floor(Math.random() * obstacleClasses.length)];
