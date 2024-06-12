@@ -27,13 +27,26 @@ const FuelPickupMarginLeft = 10;
 const FuelPickupMarginRight = 10;
 const scoreIncrementPerSecond = 1;
 
-const obstacleClasses = ["obstacle1", "obstacle2", "obstacle3", "obstacle4", "obstacle5", "obstacle6"];
+const obstacleClasses = [
+  "obstacle1",
+  "obstacle2",
+  "obstacle3",
+  "obstacle4",
+  "obstacle5",
+  "obstacle6",
+];
 
-const GameScreen = ({ playerName, selectedVehicle, highScores, setHighScores, onGoHome }) => {
+const GameScreen = ({
+  playerName,
+  selectedVehicle,
+  highScores,
+  setHighScores,
+  onGoHome,
+}) => {
   const [gamePaused, setGamePaused] = useState(false);
   const [showingScoreboard, setShowingScoreboard] = useState(false);
   const [score, setScore] = useState(0);
-  const [isMusicOn, setIsMusicOn] = useState(false); 
+  const [isMusicOn, setIsMusicOn] = useState(false);
   const [showHowToPlay, setShowHowToPlay] = useState(false);
   const [showPowerUpsModal, setShowPowerUpsModal] = useState(false);
   const [showGameOver, setShowGameOver] = useState(false);
@@ -49,7 +62,7 @@ const GameScreen = ({ playerName, selectedVehicle, highScores, setHighScores, on
   const moveInterval = useRef(null);
   const movingLeft = useRef(false);
   const movingRight = useRef(false);
-  
+
   const musicController = useRef(null);
   const gameLoopController = useRef(null);
   const carController = useRef(null);
@@ -70,27 +83,26 @@ const GameScreen = ({ playerName, selectedVehicle, highScores, setHighScores, on
       checkCollisions,
       spawnElements
     );
-  }, []);  
+  }, []);
 
   // Initialize the car controller
-useEffect(() => {
-  carController.current = new CarController(
-    trackRef,
-    setCarPosition,
-    carMoveSpeed,
-    CarMarginLeft,
-    CarMarginRight,
-    togglePause
-  );
-  carController.current.addEventListeners();
-  carController.current.startMoving();  // Start moving the car when the controller is initialized
-  
-  return () => {
-    carController.current.removeEventListeners();
-    carController.current.stopMoving();  // Stop moving the car when the component unmounts
-  };
-}, []);
+  useEffect(() => {
+    carController.current = new CarController(
+      trackRef,
+      setCarPosition,
+      carMoveSpeed,
+      CarMarginLeft,
+      CarMarginRight,
+      togglePause
+    );
+    carController.current.addEventListeners();
+    carController.current.startMoving(); // Start moving the car when the controller is initialized
 
+    return () => {
+      carController.current.removeEventListeners();
+      carController.current.stopMoving(); // Stop moving the car when the component unmounts
+    };
+  }, []);
 
   // Toggle music based on isMusicOn state
   useEffect(() => {
@@ -100,20 +112,19 @@ useEffect(() => {
   }, [isMusicOn]);
 
   // Start or stop the game loop based on isPlaying and gamePaused states
-useEffect(() => {
-  if (isPlaying && !gamePaused && gameLoopController.current) {
-    gameLoopController.current.start();
-    carController.current.startMoving();  // Ensure the car starts moving when the game starts or resumes
-  } else if (gameLoopController.current) {
-    gameLoopController.current.pause();
-    carController.current.stopMoving();  // Stop the car moving when the game pauses
-  }
-  return () => {
-    gameLoopController.current?.stop();
-    carController.current.stopMoving();  // Ensure the car stops moving when the game stops
-  };
-}, [isPlaying, gamePaused]);
- 
+  useEffect(() => {
+    if (isPlaying && !gamePaused && gameLoopController.current) {
+      gameLoopController.current.start();
+      carController.current.startMoving(); // Ensure the car starts moving when the game starts or resumes
+    } else if (gameLoopController.current) {
+      gameLoopController.current.pause();
+      carController.current.stopMoving(); // Stop the car moving when the game pauses
+    }
+    return () => {
+      gameLoopController.current?.stop();
+      carController.current.stopMoving(); // Ensure the car stops moving when the game stops
+    };
+  }, [isPlaying, gamePaused]);
 
   // Function to toggle music
   const toggleMusic = () => {
@@ -124,22 +135,28 @@ useEffect(() => {
       }
       return newIsMusicOn;
     });
-  };  
+  };
 
   // Function to toggle pause
   const togglePause = () => {
     setGamePaused(!gamePaused);
-  };  
+  };
 
   // Function to end the game
   const endGame = () => {
     console.log("Game ended");
     setIsPlaying(false);
     setGamePaused(true);
-    const newHighScores = [...highScores, { playerName, score: Math.round(score) }];
+    const newHighScores = [
+      ...highScores,
+      { playerName, score: Math.round(score) },
+    ];
     newHighScores.sort((a, b) => b.score - a.score);
     setHighScores(newHighScores.slice(0, 5));
-    localStorage.setItem('highScores', JSON.stringify(newHighScores.slice(0, 5)));
+    localStorage.setItem(
+      "highScores",
+      JSON.stringify(newHighScores.slice(0, 5))
+    );
     setShowGameOver(true);
   };
 
@@ -153,7 +170,7 @@ useEffect(() => {
     setObstacles([]);
     setFuelPickups([]);
     setShowGameOver(false);
-    
+
     if (gameLoopController.current) {
       gameLoopController.current.resetSpeed();
     }
@@ -269,7 +286,11 @@ useEffect(() => {
   };
 
   const updateScore = () => {
-    setScore((prev) => prev + (scoreIncrementPerSecond * gameLoopController.current.gameSpeed) / 1000);
+    setScore(
+      (prev) =>
+        prev +
+        (scoreIncrementPerSecond * gameLoopController.current.gameSpeed) / 1000
+    );
   };
 
   const updateObstacles = () => {
@@ -279,14 +300,17 @@ useEffect(() => {
         .filter((obstacle) => obstacle.y < 100)
     );
   };
-  
+
   const updateFuelPickups = () => {
     setFuelPickups((prev) =>
       prev
-        .map((fuelPickup) => ({ ...fuelPickup, y: fuelPickup.y + obstacleMoveSpeed }))
+        .map((fuelPickup) => ({
+          ...fuelPickup,
+          y: fuelPickup.y + obstacleMoveSpeed,
+        }))
         .filter((fuelPickup) => fuelPickup.y < 100)
     );
-  };  
+  };
 
   // Function to check for collisions
   const checkCollisions = () => {
@@ -297,61 +321,63 @@ useEffect(() => {
     const carRight = carLeft + carWidth;
     const carTop = trackRef.current ? trackRef.current.offsetHeight - carHeight : 0;
     const carBottom = carTop + carHeight;
-
+  
     const carElement = document.querySelector(".car");
-
+  
     obstacles.forEach((obstacle, index) => {
-        const obstacleElement = document.querySelectorAll(".obstacle")[index];
-        if (obstacleElement && carElement) {
-            const carRect = carElement.getBoundingClientRect();
-            const obstacleRect = obstacleElement.getBoundingClientRect();
-
-            if (
-                carRect.left < obstacleRect.right &&
-                carRect.right > obstacleRect.left &&
-                carRect.top < obstacleRect.bottom &&
-                carRect.bottom > obstacleRect.top
-            ) {
-                console.log("Collision with obstacle detected!");
-                if (hasShield) {
-                    setHasShield(false);
-                } else {
-                    setFuel((prevFuel) => prevFuel - collisionFuelPenalty);
-                }
-                setObstacles((prev) => prev.filter((_, i) => i !== index));
-            }
+      const obstacleElement = document.querySelectorAll(".obstacle")[index];
+      if (obstacleElement && carElement) {
+        const carRect = carElement.getBoundingClientRect();
+        const obstacleRect = obstacleElement.getBoundingClientRect();
+  
+        if (
+          carRect.left < obstacleRect.right &&
+          carRect.right > obstacleRect.left &&
+          carRect.top < obstacleRect.bottom &&
+          carRect.bottom > obstacleRect.top
+        ) {
+          console.log("Collision with obstacle detected!");
+          if (hasShield) {
+            setHasShield(false);
+          } else {
+            setFuel((prevFuel) => prevFuel - collisionFuelPenalty);
+          }
+          setObstacles((prev) => prev.filter((_, i) => i !== index));
         }
+      }
     });
-
+  
     fuelPickups.forEach((fuelPickup, index) => {
-        const fuelPickupElement = document.querySelectorAll(".fuel-pickup")[index];
-        if (fuelPickupElement && carElement) {
-            const carRect = carElement.getBoundingClientRect();
-            const fuelPickupRect = fuelPickupElement.getBoundingClientRect();
-
-            if (
-                carRect.left < fuelPickupRect.right &&
-                carRect.right > fuelPickupRect.left &&
-                carRect.top < fuelPickupRect.bottom &&
-                carRect.bottom > fuelPickupRect.top
-            ) {
-                console.log("Fuel pickup detected!");
-                setFuel((prevFuel) => Math.min(prevFuel + fuelPickupAmount, 100));
-                setFuelPickups((prev) => prev.filter((_, i) => i !== index));
-            }
+      const fuelPickupElement = document.querySelectorAll(".fuel-pickup")[index];
+      if (fuelPickupElement && carElement) {
+        const carRect = carElement.getBoundingClientRect();
+        const fuelPickupRect = fuelPickupElement.getBoundingClientRect();
+  
+        if (
+          carRect.left < fuelPickupRect.right &&
+          carRect.right > fuelPickupRect.left &&
+          carRect.top < fuelPickupRect.bottom &&
+          carRect.bottom > fuelPickupRect.top
+        ) {
+          console.log("Fuel pickup detected!");
+          setFuel((prevFuel) => Math.min(prevFuel + fuelPickupAmount, 100));
+          setFuelPickups((prev) => prev.filter((_, i) => i !== index));
         }
+      }
     });
-};
-
+  };
 
   // Function to spawn elements
   const spawnElements = () => {
     if (Math.random() < 0.1) {
-      const randomObstacleClass = obstacleClasses[Math.floor(Math.random() * obstacleClasses.length)];
+      const randomObstacleClass =
+        obstacleClasses[Math.floor(Math.random() * obstacleClasses.length)];
       setObstacles((prev) => [
         ...prev,
         {
-          x: Math.random() * (100 - ObstacleMarginLeft - ObstacleMarginRight) + ObstacleMarginLeft,
+          x:
+            Math.random() * (100 - ObstacleMarginLeft - ObstacleMarginRight) +
+            ObstacleMarginLeft,
           y: 0,
           className: randomObstacleClass,
         },
@@ -361,7 +387,10 @@ useEffect(() => {
       setFuelPickups((prev) => [
         ...prev,
         {
-          x: Math.random() * (100 - FuelPickupMarginLeft - FuelPickupMarginRight) + FuelPickupMarginLeft,
+          x:
+            Math.random() *
+              (100 - FuelPickupMarginLeft - FuelPickupMarginRight) +
+            FuelPickupMarginLeft,
           y: 0,
         },
       ]);
@@ -385,21 +414,34 @@ useEffect(() => {
         setHasShield={setHasShield}
       />
       <Dashboard score={score} fuel={fuel} />
-      {gamePaused && !showingScoreboard && !showPowerUpsModal && !showHowToPlay && !showGameOver ? (
+      {gamePaused &&
+      !showingScoreboard &&
+      !showPowerUpsModal &&
+      !showHowToPlay &&
+      !showGameOver ? (
         <div className="pause-menu">
           <button onClick={() => setGamePaused(false)}>Resume Game</button>
           <button onClick={() => setShowPowerUpsModal(true)}>Power-ups</button>
           <button onClick={endGame}>End Race</button>
           <button onClick={() => setShowHowToPlay(true)}>How to Play</button>
-          <button onClick={toggleMusic}>{isMusicOn ? "Music On" : "Music Off"}</button>
+          <button onClick={toggleMusic}>
+            {isMusicOn ? "Music On" : "Music Off"}
+          </button>
           <button onClick={restartGame}>Restart</button>
         </div>
-      ) : !showGameOver && (
-        <button onClick={togglePause} className="pause-button">
-          Pause
-        </button>
+      ) : (
+        !showGameOver && (
+          <button onClick={togglePause} className="pause-button">
+            Pause
+          </button>
+        )
       )}
-      <div className="track" ref={trackRef} onDrop={handleDrop} onDragOver={handleDragOver}>
+      <div
+        className="track"
+        ref={trackRef}
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+      >
         <div
           className={`car ${hasShield ? "shielded" : ""}`}
           style={{
@@ -415,7 +457,11 @@ useEffect(() => {
           />
         ))}
         {fuelPickups.map((fuelPickup, index) => (
-          <div key={index} className="fuel-pickup" style={{ left: `${fuelPickup.x}%`, top: `${fuelPickup.y}%` }} />
+          <div
+            key={index}
+            className="fuel-pickup"
+            style={{ left: `${fuelPickup.x}%`, top: `${fuelPickup.y}%` }}
+          />
         ))}
       </div>
       <div className="fuel-bar">Fuel: {fuel.toFixed(1)}</div>
