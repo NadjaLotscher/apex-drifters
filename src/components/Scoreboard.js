@@ -1,5 +1,5 @@
 import React from 'react';
-import '../CSS/Scoreboard.css'; // Ensure you have the corresponding CSS file for styling
+import '../CSS/Scoreboard.css';
 
 const Scoreboard = ({ score, onRestart }) => {
   return (
