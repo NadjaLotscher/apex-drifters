@@ -2,6 +2,8 @@
     position: absolute;
     width: 30px;
     height: 43px;
+    top: 0;
+    left: 0;
     background-image: url('../assets/fuel.png');
     background-size: cover;
     background-color: transparent;
