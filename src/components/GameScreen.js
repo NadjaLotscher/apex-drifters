@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import GameLoopController from "../controllers/GameLoopController";
+import CarController from "../controllers/CarController";
 import Dashboard from "./Dashboard";
 import HowToPlayModal from "./HowToPlayModal";
 import PowerUpsModal from "./PowerUpsModal";
@@ -16,7 +17,6 @@ const initialFuel = 100;
 const fuelConsumptionRate = 0.5;
 const collisionFuelPenalty = 5;
 const fuelPickupAmount = 20;
-const gameSpeed = 50;
 const carMoveSpeed = 1;
 const obstacleMoveSpeed = 2.5;
 const CarMarginLeft = 10;
@@ -46,13 +46,13 @@ const GameScreen = ({ playerName, selectedVehicle, highScores, setHighScores, on
 
   // Refs
   const trackRef = useRef(null);
-  const gameLoopInterval = useRef(null);
   const moveInterval = useRef(null);
   const movingLeft = useRef(false);
   const movingRight = useRef(false);
   
   const musicController = useRef(null);
   const gameLoopController = useRef(null);
+  const carController = useRef(null);
 
   // Initialize the music controller
   useEffect(() => {
@@ -72,6 +72,26 @@ const GameScreen = ({ playerName, selectedVehicle, highScores, setHighScores, on
     );
   }, []);  
 
+  // Initialize the car controller
+useEffect(() => {
+  carController.current = new CarController(
+    trackRef,
+    setCarPosition,
+    carMoveSpeed,
+    CarMarginLeft,
+    CarMarginRight,
+    togglePause
+  );
+  carController.current.addEventListeners();
+  carController.current.startMoving();  // Start moving the car when the controller is initialized
+  
+  return () => {
+    carController.current.removeEventListeners();
+    carController.current.stopMoving();  // Stop moving the car when the component unmounts
+  };
+}, []);
+
+
   // Toggle music based on isMusicOn state
   useEffect(() => {
     if (musicController.current) {
@@ -80,14 +100,20 @@ const GameScreen = ({ playerName, selectedVehicle, highScores, setHighScores, on
   }, [isMusicOn]);
 
   // Start or stop the game loop based on isPlaying and gamePaused states
-  useEffect(() => {
-    if (isPlaying && !gamePaused && gameLoopController.current) {
-      gameLoopController.current.start();
-    } else if (gameLoopController.current) {
-      gameLoopController.current.pause();
-    }
-    return () => gameLoopController.current?.stop();
-  }, [isPlaying, gamePaused]);  
+useEffect(() => {
+  if (isPlaying && !gamePaused && gameLoopController.current) {
+    gameLoopController.current.start();
+    carController.current.startMoving();  // Ensure the car starts moving when the game starts or resumes
+  } else if (gameLoopController.current) {
+    gameLoopController.current.pause();
+    carController.current.stopMoving();  // Stop the car moving when the game pauses
+  }
+  return () => {
+    gameLoopController.current?.stop();
+    carController.current.stopMoving();  // Ensure the car stops moving when the game stops
+  };
+}, [isPlaying, gamePaused]);
+ 
 
   // Function to toggle music
   const toggleMusic = () => {
@@ -144,6 +170,7 @@ const GameScreen = ({ playerName, selectedVehicle, highScores, setHighScores, on
     if (gamePaused) setGamePaused(true);
   };
 
+  /*
   // Keydown event handler
   const handleKeyDown = (e) => {
     if (gamePaused && e.key !== " ") return;
@@ -167,6 +194,7 @@ const GameScreen = ({ playerName, selectedVehicle, highScores, setHighScores, on
       movingRight.current = false;
     }
   };
+  */
 
   // Function to show Power-ups modal
   const handlePowerUpsClick = () => {
@@ -197,6 +225,7 @@ const GameScreen = ({ playerName, selectedVehicle, highScores, setHighScores, on
     e.preventDefault();
   };
 
+  /*
   // Add event listeners for keydown and keyup events
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
@@ -226,6 +255,7 @@ const GameScreen = ({ playerName, selectedVehicle, highScores, setHighScores, on
     }
     return () => clearInterval(moveInterval.current);
   }, [isPlaying, gamePaused]);
+*/
 
   // Define the game loop functions
   const updateFuel = () => {
@@ -266,15 +296,15 @@ const GameScreen = ({ playerName, selectedVehicle, highScores, setHighScores, on
     const carRight = carLeft + carWidth;
     const carTop = trackRef.current ? trackRef.current.offsetHeight - carHeight : 0;
     const carBottom = carTop + carHeight;
-  
+
     const carElement = document.querySelector(".car");
-  
+
     obstacles.forEach((obstacle, index) => {
       const obstacleElement = document.querySelectorAll(".obstacle")[index];
       if (obstacleElement && carElement) {
         const carRect = carElement.getBoundingClientRect();
         const obstacleRect = obstacleElement.getBoundingClientRect();
-  
+
         if (
           carRect.left < obstacleRect.right &&
           carRect.right > obstacleRect.left &&
@@ -291,13 +321,13 @@ const GameScreen = ({ playerName, selectedVehicle, highScores, setHighScores, on
         }
       }
     });
-  
+
     fuelPickups.forEach((fuelPickup, index) => {
       const fuelPickupElement = document.querySelectorAll(".fuel-pickup")[index];
       if (fuelPickupElement && carElement) {
         const carRect = carElement.getBoundingClientRect();
         const fuelPickupRect = fuelPickupElement.getBoundingClientRect();
-  
+
         if (
           carRect.left < fuelPickupRect.right &&
           carRect.right > fuelPickupRect.left &&
@@ -311,8 +341,6 @@ const GameScreen = ({ playerName, selectedVehicle, highScores, setHighScores, on
       }
     });
   };
-  
-  
 
   const spawnElements = () => {
     if (Math.random() < 0.1) {
@@ -335,7 +363,7 @@ const GameScreen = ({ playerName, selectedVehicle, highScores, setHighScores, on
         },
       ]);
     }
-  };  
+  };
 
   return (
     <div className="game-screen">
