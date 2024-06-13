@@ -1,20 +1,21 @@
 import React, { useState, useEffect, useRef } from "react";
 import Dashboard from "./Dashboard";
 import HowToPlayModal from "./HowToPlayModal";
-import PowerUpsModal from "./PowerUpsModal"; 
+import PowerUpsModal from "./PowerUpsModal";
 import backgroundMusic from "../assets/audio.mp3";
 import "../CSS/GameScreen.css";
 import "../CSS/Car.css";
 import "../CSS/Obstacle.css";
 import "../CSS/Fuel.css"; // Import the Fuel.css
 
+// Initial game settings
 const initialFuel = 100;
 const fuelConsumptionRate = 0.5;
 const collisionFuelPenalty = 5;
 const fuelPickupAmount = 20;
-const gameSpeed = 50; 
-const carMoveSpeed = 1; 
-const obstacleMoveSpeed = 2.5;
+const initialGameSpeed = 50;
+const initialObstacleMoveSpeed = 2.5;
+const carMoveSpeed = 1;
 const CarMarginLeft = 10; // Margin for car on the left
 const CarMarginRight = 5; // Margin for car on the right
 const ObstacleMarginLeft = 5; // Margin for obstacles on the left
@@ -23,8 +24,12 @@ const FuelPickupMarginLeft = 10; // Margin for fuel pickups on the left
 const FuelPickupMarginRight = 10; // Margin for fuel pickups on the right
 const scoreIncrementPerSecond = 1; // Define the score increment per second
 
-const obstacleClasses = ["obstacle1", "obstacle2", "obstacle3", "obstacle4", "obstacle5", "obstacle6"]; // for the random obstacle pictures
+// Speed increase rates
+const gameSpeedIncreaseRate = 0.1; // Rate at which the game speed increases
+const obstacleSpeedIncreaseRate = 0.01; // Rate at which the obstacle speed increases
 
+// Obstacle classes for random obstacle pictures
+const obstacleClasses = ["obstacle1", "obstacle2", "obstacle3", "obstacle4", "obstacle5", "obstacle6"];
 
 const GameScreen = ({ playerName, selectedVehicle, onGameEnd }) => {
   const [gamePaused, setGamePaused] = useState(false);
@@ -39,6 +44,8 @@ const GameScreen = ({ playerName, selectedVehicle, onGameEnd }) => {
   const [fuelPickups, setFuelPickups] = useState([]);
   const [isPlaying, setIsPlaying] = useState(true);
   const [hasShield, setHasShield] = useState(false);
+  const [gameSpeed, setGameSpeed] = useState(initialGameSpeed);
+  const [obstacleMoveSpeed, setObstacleMoveSpeed] = useState(initialObstacleMoveSpeed);
 
   const trackRef = useRef(null);
   const gameLoopInterval = useRef(null);
@@ -46,6 +53,7 @@ const GameScreen = ({ playerName, selectedVehicle, onGameEnd }) => {
   const movingLeft = useRef(false);
   const movingRight = useRef(false);
 
+  // Handle music play/pause based on state
   useEffect(() => {
     const music = document.getElementById("backgroundMusic");
     if (isMusicOn) {
@@ -55,21 +63,25 @@ const GameScreen = ({ playerName, selectedVehicle, onGameEnd }) => {
     }
   }, [isMusicOn]);
 
+  // Toggle game pause state
   const togglePause = () => setGamePaused(!gamePaused);
-  
+
+  // End the game and show scoreboard
   const endGame = () => {
     console.log("Game ended");
     setIsPlaying(false);
     setGamePaused(true);
     setShowingScoreboard(true);
-    onGameEnd(); 
+    onGameEnd();
   };
 
+  // Show the scoreboard
   const showScoreboard = () => {
     setShowingScoreboard(true);
     setGamePaused(false);
   };
 
+  // Restart the game with initial settings
   const restartGame = () => {
     setScore(0);
     setFuel(initialFuel);
@@ -77,24 +89,29 @@ const GameScreen = ({ playerName, selectedVehicle, onGameEnd }) => {
     setShowingScoreboard(false);
     setIsPlaying(true);
     setHasShield(false);
+    setGameSpeed(initialGameSpeed);
+    setObstacleMoveSpeed(initialObstacleMoveSpeed);
   };
 
-
+  // Toggle music state
   const toggleMusic = () => {
     setIsMusicOn(!isMusicOn);
   };
 
+  // Show the "How to Play" modal
   const handleHowToPlay = () => {
     setShowHowToPlay(true);
   };
 
+  // Close the "How to Play" modal
   const closeHowToPlayModal = () => {
     setShowHowToPlay(false);
     if (gamePaused) setGamePaused(true);
   };
 
+  // Handle key down events for car movement and pause
   const handleKeyDown = (e) => {
-    if (gamePaused && e.key !== " ") return; 
+    if (gamePaused && e.key !== " ") return;
 
     if (e.key === "ArrowLeft") {
       movingLeft.current = true;
@@ -107,6 +124,7 @@ const GameScreen = ({ playerName, selectedVehicle, onGameEnd }) => {
     }
   };
 
+  // Handle key up events for car movement
   const handleKeyUp = (e) => {
     if (e.key === "ArrowLeft") {
       movingLeft.current = false;
@@ -115,15 +133,18 @@ const GameScreen = ({ playerName, selectedVehicle, onGameEnd }) => {
     }
   };
 
+  // Show the power-ups modal
   const handlePowerUpsClick = () => {
     setShowPowerUpsModal(true);
     if (gamePaused) setGamePaused(true);
   };
 
+  // Close the power-ups modal
   const closePowerUpsModal = () => {
     setShowPowerUpsModal(false);
   };
 
+  // Handle dropping power-ups onto the game screen
   const handleDrop = (event) => {
     event.preventDefault();
     const powerUpType = event.dataTransfer.getData('powerUpType');
@@ -137,10 +158,12 @@ const GameScreen = ({ playerName, selectedVehicle, onGameEnd }) => {
     }
   };
 
+  // Handle drag over event for power-ups
   const handleDragOver = (e) => {
     e.preventDefault();
   };
 
+  // Attach and detach keydown/keyup event listeners
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
@@ -150,6 +173,7 @@ const GameScreen = ({ playerName, selectedVehicle, onGameEnd }) => {
     };
   }, [gamePaused]);
 
+  // Start and stop the game loop based on play/pause state
   useEffect(() => {
     if (isPlaying && !gamePaused) {
       gameLoopInterval.current = setInterval(gameLoop, gameSpeed);
@@ -157,8 +181,9 @@ const GameScreen = ({ playerName, selectedVehicle, onGameEnd }) => {
       clearInterval(gameLoopInterval.current);
     }
     return () => clearInterval(gameLoopInterval.current);
-  }, [isPlaying, gamePaused, fuel, obstacles, fuelPickups]);
-  
+  }, [isPlaying, gamePaused, fuel, obstacles, fuelPickups, gameSpeed]);
+
+  // Handle car movement based on key press state
   useEffect(() => {
     if (isPlaying && !gamePaused) {
       moveInterval.current = setInterval(() => {
@@ -178,11 +203,12 @@ const GameScreen = ({ playerName, selectedVehicle, onGameEnd }) => {
     return () => clearInterval(moveInterval.current);
   }, [isPlaying, gamePaused]);
 
+  // Main game loop
   const gameLoop = () => {
     setFuel((prev) => {
       const newFuel = Math.max(prev - fuelConsumptionRate, 0);
       if (newFuel === 0) {
-        endGame(); // Call endGame function
+        endGame(); // Call endGame function if fuel runs out
       }
       return newFuel;
     });
@@ -203,10 +229,15 @@ const GameScreen = ({ playerName, selectedVehicle, onGameEnd }) => {
 
     checkCollisions();
     spawnElements();
+
+    // Increase speed over time
+    setGameSpeed((prev) => Math.max(prev - gameSpeedIncreaseRate, 10)); // Use variable for game speed increase rate
+    setObstacleMoveSpeed((prev) => prev + obstacleSpeedIncreaseRate); // Use variable for obstacle speed increase rate
   };
 
-const checkCollisions = () => {
-  const trackWidth = trackRef.current ? trackRef.current.offsetWidth : 700;
+  // Check for collisions between the car and obstacles/fuel pickups
+  const checkCollisions = () => {
+    const trackWidth = trackRef.current ? trackRef.current.offsetWidth : 700;
     const carWidth = 55; // Adjusted to match the CSS
     const carHeight = 100; // Adjusted to match the CSS
     const carLeft = (carPosition / 100) * trackWidth;
@@ -222,7 +253,7 @@ const checkCollisions = () => {
       if (obstacleElement && carElement) {
         const carRect = carElement.getBoundingClientRect();
         const obstacleRect = obstacleElement.getBoundingClientRect();
-  
+
         if (
           carRect.left < obstacleRect.left + obstacleRect.width &&
           carRect.left + carRect.width > obstacleRect.left &&
@@ -252,7 +283,7 @@ const checkCollisions = () => {
       if (fuelPickupElement && carElement) {
         const carRect = carElement.getBoundingClientRect();
         const fuelPickupRect = fuelPickupElement.getBoundingClientRect();
-  
+
         if (
           carRect.left < fuelPickupRect.left + fuelPickupRect.width &&
           carRect.left + carRect.width > fuelPickupRect.left &&
@@ -267,8 +298,7 @@ const checkCollisions = () => {
     });
   };
 
-
-
+  // Spawn new obstacles and fuel pickups at random intervals
   const spawnElements = () => {
     if (Math.random() < 0.1) {
       const randomObstacleClass = obstacleClasses[Math.floor(Math.random() * obstacleClasses.length)];
@@ -291,7 +321,6 @@ const checkCollisions = () => {
       ]);
     }
   };
-  
 
   return (
     <div className="game-screen">
@@ -303,8 +332,8 @@ const checkCollisions = () => {
           text="Use the arrow keys to move the car left and right. Avoid obstacles and collect fuel to keep going!"
         />
       )}
-      <PowerUpsModal 
-        isOpen={showPowerUpsModal} 
+      <PowerUpsModal
+        isOpen={showPowerUpsModal}
         onClose={closePowerUpsModal}
         selectedVehicle={selectedVehicle}
         setHasShield={setHasShield}
@@ -327,7 +356,7 @@ const checkCollisions = () => {
       <div className="track" ref={trackRef} onDrop={handleDrop} onDragOver={handleDragOver}>
         <div
           className={`car ${hasShield ? 'shielded' : ''}`}
-          style={{ 
+          style={{
             left: `${carPosition}%`,
             backgroundImage: `url(${selectedVehicle.image})`
           }}
