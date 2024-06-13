@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Dashboard from "./Dashboard";
 import HowToPlayModal from "./HowToPlayModal";
 import PowerUpsModal from "./PowerUpsModal";
+import GameOverModal from "./GameOverModal";
 import backgroundMusic from "../assets/audio.mp3";
 import "../CSS/GameScreen.css";
 import "../CSS/Car.css";
@@ -11,7 +12,7 @@ import "../CSS/Fuel.css"; // Import the Fuel.css
 // Initial game settings
 const initialFuel = 100;
 const fuelConsumptionRate = 0.5;
-const collisionFuelPenalty = 5;
+const collisionFuelPenalty = 10;
 const fuelPickupAmount = 20;
 const initialGameSpeed = 50;
 const initialObstacleMoveSpeed = 2.5;
@@ -31,7 +32,7 @@ const obstacleSpeedIncreaseRate = 0.01; // Rate at which the obstacle speed incr
 // Obstacle classes for random obstacle pictures
 const obstacleClasses = ["obstacle1", "obstacle2", "obstacle3", "obstacle4", "obstacle5", "obstacle6"];
 
-const GameScreen = ({ playerName, selectedVehicle, onGameEnd }) => {
+const GameScreen = ({ playerName, selectedVehicle, highScores, setHighScores, onGameEnd }) => {
   const [gamePaused, setGamePaused] = useState(false);
   const [showingScoreboard, setShowingScoreboard] = useState(false);
   const [score, setScore] = useState(0);
@@ -46,6 +47,7 @@ const GameScreen = ({ playerName, selectedVehicle, onGameEnd }) => {
   const [hasShield, setHasShield] = useState(false);
   const [gameSpeed, setGameSpeed] = useState(initialGameSpeed);
   const [obstacleMoveSpeed, setObstacleMoveSpeed] = useState(initialObstacleMoveSpeed);
+  const [showGameOver, setShowGameOver] = useState(false);
 
   const trackRef = useRef(null);
   const gameLoopInterval = useRef(null);
@@ -71,9 +73,13 @@ const GameScreen = ({ playerName, selectedVehicle, onGameEnd }) => {
     console.log("Game ended");
     setIsPlaying(false);
     setGamePaused(true);
-    setShowingScoreboard(true);
+    const newHighScores = [...highScores, { playerName, score: Math.round(score) }];
+    newHighScores.sort((a, b) => b.score - a.score);
+    setHighScores(newHighScores.slice(0, 5));
+    localStorage.setItem('highScores', JSON.stringify(newHighScores.slice(0, 5)));
+    setShowGameOver(true);
     onGameEnd();
-  };
+  };  
 
   // Show the scoreboard
   const showScoreboard = () => {
@@ -91,6 +97,7 @@ const GameScreen = ({ playerName, selectedVehicle, onGameEnd }) => {
     setHasShield(false);
     setGameSpeed(initialGameSpeed);
     setObstacleMoveSpeed(initialObstacleMoveSpeed);
+    setShowGameOver(false);
   };
 
   // Toggle music state
@@ -371,7 +378,7 @@ const GameScreen = ({ playerName, selectedVehicle, onGameEnd }) => {
         setHasShield={setHasShield}
       />
       <Dashboard score={score} fuel={fuel} />
-      {gamePaused && !showingScoreboard && !showPowerUpsModal && !showHowToPlay ? (
+      {gamePaused && !showingScoreboard && !showPowerUpsModal && !showHowToPlay && !showGameOver ? (
         <div className="pause-menu">
           <button onClick={() => setGamePaused(false)}>Resume Game</button>
           <button onClick={() => setShowPowerUpsModal(true)}>Power-ups</button>
@@ -381,7 +388,7 @@ const GameScreen = ({ playerName, selectedVehicle, onGameEnd }) => {
           <button onClick={restartGame}>Restart</button>
           <button onClick={getCurrentLocation}>Get Current Location</button>
         </div>
-      ) : (
+      ) : !showGameOver && (
         <button onClick={togglePause} className="pause-button">
           Pause
         </button>
@@ -412,8 +419,18 @@ const GameScreen = ({ playerName, selectedVehicle, onGameEnd }) => {
       <div className="fuel-bar">
         Fuel: {fuel.toFixed(1)}
       </div>
+      {showGameOver && (
+        <GameOverModal
+          isOpen={showGameOver}
+          playerName={playerName}
+          score={score}
+          highScores={highScores}
+          onTryAgain={restartGame}
+          onGoHome={onGameEnd}
+        />
+      )}
     </div>
-  );
+  );  
 };
 
 export default GameScreen;
