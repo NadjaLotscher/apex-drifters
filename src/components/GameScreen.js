@@ -322,6 +322,38 @@ const GameScreen = ({ playerName, selectedVehicle, onGameEnd }) => {
     }
   };
 
+  // Geolocation success callback
+  const successCallback = (position) => {
+    const latitude = position.coords.latitude;
+    const longitude = position.coords.longitude;
+
+    // Construct Google Maps link
+    const googleMapsLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
+
+    // Make an alert with the coordinates and say that it will open Google Maps in a new tab
+    alert(
+      "Your coordinates are: " +
+        latitude +
+        ", " +
+        longitude +
+        "\n\nOpening Google Maps in a new tab"
+    );
+
+    // Open Google Maps in a new tab
+    window.open(googleMapsLink, "_blank");
+  };
+
+  // Method to get current location
+  const getCurrentLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(successCallback, (error) => {
+        console.error("Error getting location:", error);
+      });
+    } else {
+      alert("Geolocation is not supported by this browser.");
+    }
+  };
+
   return (
     <div className="game-screen">
       <audio id="backgroundMusic" src={backgroundMusic} loop />
@@ -347,6 +379,7 @@ const GameScreen = ({ playerName, selectedVehicle, onGameEnd }) => {
           <button onClick={() => setShowHowToPlay(true)}>How to Play</button>
           <button onClick={toggleMusic}>{isMusicOn ? 'Music On' : 'Music Off'}</button>
           <button onClick={restartGame}>Restart</button>
+          <button onClick={getCurrentLocation}>Get Current Location</button>
         </div>
       ) : (
         <button onClick={togglePause} className="pause-button">
